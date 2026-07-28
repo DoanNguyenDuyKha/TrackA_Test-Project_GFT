@@ -262,4 +262,28 @@ router.get('/progress-analytics', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/submissions - Xem danh sách bài làm (Student xem của mình, Admin xem tất cả)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    let query = {};
+    if (req.user.role === 'student') {
+      query.studentId = req.user._id;
+    }
+
+    const submissions = await Submission.find(query)
+      .populate('studentId', 'name email studentGroup targetBand')
+      .populate('assignmentId', 'title topic targetGroup')
+      .sort({ submittedAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: submissions.length,
+      data: submissions
+    });
+  } catch (error) {
+    console.error('GET Submissions Error:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching submissions', error: error.message });
+  }
+});
+
 module.exports = router;
