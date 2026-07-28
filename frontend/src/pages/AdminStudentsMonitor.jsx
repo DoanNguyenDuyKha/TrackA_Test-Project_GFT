@@ -121,61 +121,12 @@ const AdminStudentsMonitor = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-wrap justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-slate-800">Giám Sát & Can Thiệp Sư Phạm Học Viên (Admin)</h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Theo dõi chi tiết kết quả bài nộp GPT-4o, kiểm tra lịch sử học tập và can thiệp điều chỉnh (Override) nhóm năng lực học viên
-            </p>
-          </div>
-
-          <button
-            onClick={handleRunAiAnalysis}
-            disabled={analyzingAI}
-            className="px-5 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white rounded-2xl font-black text-xs shadow-lg hover:shadow-xl transition flex items-center space-x-2 shrink-0 animate-fadeIn"
-          >
-            <Sparkles className="w-4 h-4 text-yellow-300 animate-spin" />
-            <span>{analyzingAI ? 'AI Đang Phân Tích Toàn Bộ Lớp...' : '🔥 AI Phân Tích Học Viên Cần Can Thiệp'}</span>
-          </button>
+        <div>
+          <h1 className="text-2xl font-black text-slate-800">Giám Sát & Can Thiệp Sư Phạm Học Viên (Admin)</h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Hệ thống AI tự động theo dõi tiến độ, bóc tách rủi ro ngưng trệ và hiển thị trực tiếp khuyến nghị can thiệp cho từng học viên.
+          </p>
         </div>
-
-        {/* BẢNG PHÂN TÍCH AI CỐ VẤN SƯ PHẠM (AI PEDAGOGICAL MONITORING ASSISTANT) */}
-        {aiAnalysis && (
-          <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-900 text-white p-6 sm:p-8 rounded-3xl shadow-2xl space-y-5 border border-indigo-500/30 animate-fadeIn">
-            <div className="flex justify-between items-center border-b border-indigo-700/60 pb-3">
-              <h3 className="font-extrabold text-base text-yellow-300 flex items-center">
-                <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
-                BÁO CÁO CỐ VẤN SƯ PHẠM AI (GPT-4O PEDAGOGICAL ASSISTANT)
-              </h3>
-              <span className="text-xs px-3 py-1 bg-white/10 rounded-full font-mono text-indigo-200">
-                Tự động nhận diện rủi ro
-              </span>
-            </div>
-
-            <p className="text-xs text-indigo-200 leading-relaxed italic">{aiAnalysis.overallClassHealth}</p>
-
-            {/* Cảnh báo học viên nguy cơ tụt phong độ cần can thiệp gấp */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-black text-red-300 uppercase tracking-wider flex items-center">
-                🚨 Danh Sách Học Viên Cần Can Thiệp Khẩn Cấp ({aiAnalysis.criticalInterventions?.length || 0} học viên):
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {aiAnalysis.criticalInterventions?.map((item, idx) => (
-                  <div key={idx} className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-red-500/30 space-y-1">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-sm text-yellow-200">{item.studentName}</span>
-                      <span className="px-2 py-0.5 bg-red-500/80 text-white text-[10px] font-black rounded-full uppercase">
-                        {item.riskLevel}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-200"><strong>Lý do:</strong> {item.reason}</p>
-                    <p className="text-xs text-indigo-200 font-semibold"><strong>Gợi ý Admin:</strong> {item.suggestedAction}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Table danh sách học viên */}
         {loading ? (
@@ -190,8 +141,9 @@ const AdminStudentsMonitor = () => {
                   <th className="p-4">Nhóm Thích Ứng Currently</th>
                   <th className="p-4 text-center">Số Bài Nộp</th>
                   <th className="p-4 text-center">Band Trung Bình Động (MA 5)</th>
+                  <th className="p-4">Trạng Thái Rủi Ro & Khuyến Nghị Can Thiệp AI</th>
                   <th className="p-4 text-center">Can Thiệp Sư Phạm (Override)</th>
-                  <th className="p-4 text-right">Giám Sát Chi Tiết</th>
+                  <th className="p-4 text-right">Chi Tiết Tiến Độ</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
@@ -202,18 +154,13 @@ const AdminStudentsMonitor = () => {
                       key={student._id}
                       className={`transition ${
                         riskAlert
-                          ? 'bg-red-50/50 hover:bg-red-50 border-l-4 border-l-red-500'
+                          ? 'bg-red-50/60 hover:bg-red-50 border-l-4 border-l-red-500'
                           : 'hover:bg-slate-50/80'
                       }`}
                     >
                       <td className="p-4">
                         <div className="font-bold text-slate-800 flex items-center space-x-2">
                           <span>{student.name}</span>
-                          {riskAlert && (
-                            <span className="px-2 py-0.5 bg-red-600 text-white font-black text-[9px] rounded-full uppercase animate-pulse shadow-sm">
-                              🚨 CAN THIỆP GẤP
-                            </span>
-                          )}
                         </div>
                         <span className="text-[10px] font-semibold text-slate-400">Target: {student.targetBand || 6.5} Band</span>
                       </td>
@@ -224,6 +171,25 @@ const AdminStudentsMonitor = () => {
                         <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-xs rounded-full border border-blue-100">
                           {student.movingAvg} Band
                         </span>
+                      </td>
+                      <td className="p-4 max-w-xs">
+                        {riskAlert ? (
+                          <div className="space-y-1">
+                            <span className="px-2 py-0.5 bg-red-600 text-white font-black text-[10px] rounded-full uppercase inline-block animate-pulse shadow-sm">
+                              🚨 CAN THIỆP GẤP ({riskAlert.riskLevel})
+                            </span>
+                            <p className="text-[11px] text-red-900 font-medium leading-snug">
+                              <strong>Lý do:</strong> {riskAlert.reason}
+                            </p>
+                            <p className="text-[11px] text-indigo-900 font-bold leading-snug">
+                              <strong>Gợi ý Admin:</strong> {riskAlert.suggestedAction}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="inline-flex items-center text-xs font-semibold text-emerald-600">
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Học tập tiến bộ ổn định
+                          </span>
+                        )}
                       </td>
                       <td className="p-4 text-center">
                         {/* Manual Override Dropdown */}
