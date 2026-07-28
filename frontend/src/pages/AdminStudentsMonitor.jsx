@@ -48,17 +48,20 @@ const AdminStudentsMonitor = () => {
     fetchMonitorData();
   }, []);
 
-  // Thay đổi thủ công nhóm năng lực (Manual Override)
+  // Thay đổi thủ công nhóm năng lực (Manual Override - Can thiệp thủ công từ Admin)
   const handleOverrideGroup = async (studentId, newGroup) => {
     try {
-      // Trong môi trường demo, ta cập nhật tạm local state đại diện cho Override thành công
-      setUsers(prev => prev.map(u => u._id === studentId ? { ...u, studentGroup: newGroup } : u));
-      if (selectedStudent && selectedStudent._id === studentId) {
-        setSelectedStudent({ ...selectedStudent, studentGroup: newGroup });
+      const res = await api.put(`/auth/users/${studentId}/override-group`, { studentGroup: newGroup });
+      if (res.data.success) {
+        setUsers(prev => prev.map(u => u._id === studentId ? { ...u, studentGroup: newGroup } : u));
+        if (selectedStudent && selectedStudent._id === studentId) {
+          setSelectedStudent({ ...selectedStudent, studentGroup: newGroup });
+        }
+        alert(`🎯 Đã Can Thiệp Thủ Công (Admin Manual Override): Chuyển học viên sang nhóm [${newGroup.toUpperCase()}] thành công!`);
       }
-      alert(`Đã Override cập nhật nhóm năng lực thủ công thành: ${newGroup.toUpperCase()}`);
     } catch (err) {
       console.error('Error overriding group:', err);
+      alert('Có lỗi xảy ra khi can thiệp điều chỉnh nhóm học viên!');
     }
   };
 

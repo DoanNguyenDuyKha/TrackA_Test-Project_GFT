@@ -134,4 +134,33 @@ router.put('/update-group', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/auth/users/:id/override-group - Admin can thiệp điều chỉnh thủ công nhóm học viên (Bài Toán 3 PDF)
+router.put('/users/:id/override-group', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { studentGroup, targetBand } = req.body;
+    if (studentGroup && !['support', 'average', 'excellent'].includes(studentGroup)) {
+      return res.status(400).json({ success: false, message: 'Invalid student group' });
+    }
+
+    const updateFields = {};
+    if (studentGroup) updateFields.studentGroup = studentGroup;
+    if (targetBand) updateFields.targetBand = targetBand;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      updateFields,
+      { new: true }
+    ).select('-password');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Admin manual override successful',
+      data: updatedUser
+    });
+  } catch (error) {
+    console.error('Admin Override Error:', error);
+    return res.status(500).json({ success: false, message: 'Error performing manual override', error: error.message });
+  }
+});
+
 module.exports = router;
