@@ -9,6 +9,7 @@ const AdminAssignments = () => {
 
   // Form State
   const [title, setTitle] = useState('');
+  const [examDate, setExamDate] = useState('');
   const [prompt, setPrompt] = useState('');
   const [topic, setTopic] = useState('Education');
   const [targetGroup, setTargetGroup] = useState('support');
@@ -55,8 +56,13 @@ const AdminAssignments = () => {
     try {
       const filteredVocab = suggestedVocab.filter(v => v.word.trim() !== '');
 
+      // Tự động ghép Ngày ra đề vào Tiêu đề đề thi nếu có chọn Ngày ra đề
+      const formattedTitle = examDate 
+        ? `${title} (Đề thi ngày ${examDate})`
+        : title;
+
       const res = await api.post('/assignments', {
-        title,
+        title: formattedTitle,
         prompt,
         topic,
         targetGroup,
@@ -67,7 +73,9 @@ const AdminAssignments = () => {
       if (res.data.success) {
         setShowModal(false);
         setTitle('');
+        setExamDate('');
         setPrompt('');
+        setTopic('Education');
         setScaffoldingTemplate('');
         setSuggestedVocab([{ word: '', meaning: '', collocation: '' }]);
         fetchAssignments();
@@ -186,53 +194,61 @@ const AdminAssignments = () => {
               </div>
 
               <form onSubmit={handleCreateAssignment} className="space-y-4 text-xs font-semibold">
-                <div>
-                  <label className="block text-slate-700 mb-1">Tiêu đề đề thi</label>
-                  <input
-                    type="text"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Ví dụ: Đề thi thật ngày 19/10/2025 - Quy mô lớp học"
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 mb-1">Đề bài luận đầy đủ (Prompt)</label>
-                  <textarea
-                    required
-                    rows={3}
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Nhập câu hỏi essay đầy đủ..."
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-slate-700 mb-1">Chủ đề (Topic)</label>
-                    <select
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold"
-                    >
-                      <option value="Education">Education</option>
-                      <option value="Health">Health</option>
-                      <option value="Art">Art</option>
-                      <option value="Technology">Technology</option>
-                      <option value="Sport">Sport</option>
-                      <option value="Social Issues">Social Issues</option>
-                    </select>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-slate-700 mb-1">1. Tiêu đề đề thi</label>
+                    <input
+                      type="text"
+                      required
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Ví dụ: Real IELTS Writing 2 - Quy mô lớp học"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm"
+                    />
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 mb-1">Nhóm Học Viên Đích (targetGroup)</label>
+                    <label className="block text-slate-700 mb-1">2. Ngày ra đề thi thật</label>
+                    <input
+                      type="date"
+                      value={examDate}
+                      onChange={(e) => setExamDate(e.target.value)}
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 mb-1">3. Đề bài luận đầy đủ (Prompt)</label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Nhập câu hỏi essay đầy đủ (Ví dụ: Some people think that...)..."
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm font-serif leading-relaxed"
+                  ></textarea>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-slate-700 mb-1">4. Chủ đề (Topic - Nhập text trực tiếp)</label>
+                    <input
+                      type="text"
+                      required
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      placeholder="Nhập chủ đề (Ví dụ: Education, Environment, Health...)"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-800"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 mb-1">5. Nhóm Học Viên Đích (targetGroup)</label>
                     <select
                       value={targetGroup}
                       onChange={(e) => setTargetGroup(e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-blue-600"
+                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-blue-600 cursor-pointer"
                     >
                       <option value="support">Support (Cần hỗ trợ)</option>
                       <option value="average">Average (Trung bình)</option>
