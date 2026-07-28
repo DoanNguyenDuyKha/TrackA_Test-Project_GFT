@@ -56,7 +56,7 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/assignments/:id/generate-adaptive-sample - Render bài mẫu thích ứng theo nhóm học viên bằng AI GPT-4o
+// POST /api/assignments/:id/generate-adaptive-sample - AI tự động phân tích bài luận của Admin để trích xuất Từ vựng & Bài tập tương tác DOL
 router.post('/:id/generate-adaptive-sample', authenticateToken, async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
@@ -65,44 +65,21 @@ router.post('/:id/generate-adaptive-sample', authenticateToken, async (req, res)
     }
 
     const studentGroup = req.user.studentGroup || 'support';
+    const targetBand = studentGroup === 'support' ? '6.0' : (studentGroup === 'average' ? '7.0' : '8.5+');
 
-    // Ưu tiên 1: Nếu Admin đã viết sẵn bài luận riêng cho nhóm học viên này trong groupSampleAnswers -> Trả về ngay lập tức
-    if (assignment.groupSampleAnswers && assignment.groupSampleAnswers[studentGroup] && assignment.groupSampleAnswers[studentGroup].trim() !== '') {
-      const targetBand = studentGroup === 'support' ? '6.0' : (studentGroup === 'average' ? '7.0' : '8.5+');
-      return res.json({
-        success: true,
-        data: {
-          targetBand,
-          studentGroup,
-          sampleAnswer: assignment.groupSampleAnswers[studentGroup],
-          isPrecomputed: true
-        }
-      });
-    }
+    // Lấy bài mẫu mà Admin đã viết cho nhóm học viên này
+    const adminParagraph = (assignment.groupSampleAnswers && assignment.groupSampleAnswers[studentGroup]) 
+      ? assignment.groupSampleAnswers[studentGroup]
+      : assignment.sampleAnswer;
 
-    if (studentGroup === 'excellent') {
-      return res.json({
-        success: true,
-        data: {
-          targetBand: '8.5+',
-          studentGroup,
-          sampleAnswer: assignment.sampleAnswer,
-          isPrecomputed: true
-        }
-      });
-    }
-
-    const targetBand = studentGroup === 'support' ? '6.0' : '7.0';
-    const complexityGuide = studentGroup === 'support' 
-      ? 'Viết bài luận ở mức Band 6.0 với từ vựng dễ hiểu, câu đơn và câu ghép cơ bản, cấu trúc mạch lạc rõ ràng, không lạm dụng từ quá khó.'
-      : 'Viết bài luận ở mức Band 7.0 với các từ vựng học thuật tốt, áp dụng một số câu phức và collocations tự nhiên.';
-
-    let generatedSample = '';
-
+    // AI sử dụng bài mẫu của Admin để trích xuất 10 Từ vựng + 10 Bài tập tương tác phù hợp
     const OpenAI = require('openai');
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-fallback'
     });
+
+    let extractedVocab = [];
+    let generatedExercises = [];
 
     if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
       try {
@@ -111,23 +88,28 @@ router.post('/:id/generate-adaptive-sample', authenticateToken, async (req, res)
           messages: [
             {
               role: 'system',
-              content: `Bạn là một chuyên gia luyện thi IELTS Writing Task 2. Nhiệm vụ của bạn là viết một bài mẫu IELTS Writing Task 2 chuẩn chính xác ở Band ${targetBand}. ${complexityGuide}`
+              content: `Bạn là trợ lý giảng dạy IELTS DOL English. Nhiệm vụ của bạn là phân tích đoạn văn bài luận IELTS Task 2 do Admin cung cấp và trích xuất đúng 10 từ vựng cốt lõi + 10 bài tập điền từ tương tác phù hợp với trình độ Band ${targetBand}. Trả về duy nhất định dạng JSON.`
             },
             {
               role: 'user',
-              content: `[ĐỀ BÀI TASK 2] ${assignment.prompt}\n\nHãy viết bài mẫu đạt Band ${targetBand} khoảng 260-280 từ. Trả về duy nhất nội dung bài luận Tiếng Anh.`
+              content: `[ĐỌAN VĂN BÀI MẪU ADMIN BAND ${targetBand}]:\n${adminParagraph}\n\nHãy phân tích và trả về cấu trúc JSON đúng định dạng như sau:\n{\n  "suggestedVocabulary": [\n    {"word": "từ vựng", "meaning": "nghĩa tiếng Việt", "collocation": "cụm từ đi kèm trong bài"}\n  ],\n  "exercises": [\n    {"prompt": "Câu hỏi...", "blankSpaceText": "Sentence with _______ blank", "correctAnswer": "từ từ đoạn văn", "explanation": "Giải thích ngắn"}\n  ]\n}`
             }
           ],
-          temperature: 0.5
+          response_format: { type: 'json_object' },
+          temperature: 0.3
         });
 
-        generatedSample = aiRes.choices[0].message.content.trim();
+        const parsedData = JSON.parse(aiRes.choices[0].message.content);
+        extractedVocab = parsedData.suggestedVocabulary || [];
+        generatedExercises = parsedData.exercises || [];
       } catch (err) {
-        console.error('Error generating AI adaptive sample:', err.message);
-        generatedSample = `[Fallback Band ${targetBand} Sample]\n${assignment.sampleAnswer}`;
+        console.error('Error generating AI vocab & exercises from admin paragraph:', err.message);
+        extractedVocab = assignment.suggestedVocabulary || [];
+        generatedExercises = assignment.exercises || [];
       }
     } else {
-      generatedSample = `[Fallback Band ${targetBand} Sample]\n${assignment.sampleAnswer}`;
+      extractedVocab = assignment.suggestedVocabulary || [];
+      generatedExercises = assignment.exercises || [];
     }
 
     return res.json({
@@ -135,8 +117,9 @@ router.post('/:id/generate-adaptive-sample', authenticateToken, async (req, res)
       data: {
         targetBand,
         studentGroup,
-        sampleAnswer: generatedSample,
-        isPrecomputed: false
+        sampleAnswer: adminParagraph, // Đúng đoạn văn Admin đã viết
+        suggestedVocabulary: extractedVocab.length > 0 ? extractedVocab : assignment.suggestedVocabulary,
+        exercises: generatedExercises.length > 0 ? generatedExercises : assignment.exercises
       }
     });
   } catch (error) {

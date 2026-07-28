@@ -39,26 +39,13 @@ const Workspace = () => {
           const assignData = res.data.data;
           setAssignment(assignData);
 
-          // Nếu học viên là 'excellent' -> hiển thị bài mẫu Band 8.5+ từ CSDL
-          if (user?.studentGroup === 'excellent') {
-            setAdaptiveSample(assignData.sampleAnswer);
-            setAdaptiveBand('8.5+');
-          } else {
-            // Học viên 'support' hoặc 'average' -> Gọi AI GPT-4o render bài mẫu Band thích ứng vừa sức
-            setLoadingSample(true);
-            try {
-              const sampleRes = await api.post(`/assignments/${id}/generate-adaptive-sample`);
-              if (sampleRes.data.success) {
-                setAdaptiveSample(sampleRes.data.data.sampleAnswer);
-                setAdaptiveBand(sampleRes.data.data.targetBand);
-              }
-            } catch (err) {
-              setAdaptiveSample(assignData.sampleAnswer);
-              setAdaptiveBand(user?.studentGroup === 'support' ? '6.0' : '7.0');
-            } finally {
-              setLoadingSample(false);
-            }
-          }
+          // Lấy trực tiếp bài mẫu mà Admin đã thêm tùy theo nhóm năng lực của học viên (Support -> 6.0, Average -> 7.0, Excellent -> 8.5+)
+          const group = user?.studentGroup || 'support';
+          const groupSample = assignData.groupSampleAnswers?.[group] || assignData.sampleAnswer;
+          const bandLabel = group === 'support' ? '6.0' : (group === 'average' ? '7.0' : '8.5+');
+          
+          setAdaptiveSample(groupSample);
+          setAdaptiveBand(bandLabel);
         }
       } catch (err) {
         console.error('Error fetching assignment details:', err);
