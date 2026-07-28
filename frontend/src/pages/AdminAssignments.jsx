@@ -6,6 +6,7 @@ const AdminAssignments = () => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('general'); // Tab Modal System: 'general' | 'samples' | 'outline'
 
   // Form State: 3 Ô Nhập Bài Mẫu Riêng Cho 3 Nhóm Học Viên (Support, Average, Excellent)
   const [title, setTitle] = useState('');
@@ -224,261 +225,286 @@ const AdminAssignments = () => {
           </div>
         )}
 
-        {/* Modal Create Assignment */}
+        {/* Modal Create Assignment (Không cần cuộn - Tabbed System & No Scrollbar) */}
         {showModal && (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-4 border border-slate-200 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3">
+            <div className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl space-y-4 border border-slate-200 no-scrollbar overflow-hidden">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 className="text-xl font-extrabold text-slate-800">Tạo Đề Thi IELTS Task 2 Mới</h3>
-                <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                    <Plus className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-800">Tạo Đề Thi IELTS Task 2 Thích Ứng Mới</h3>
+                    <p className="text-[11px] text-slate-400">Cấu hình thông tin đề thi, bài luận mẫu và dàn ý 4 phần</p>
+                  </div>
+                </div>
+
+                {/* Tab Navigation */}
+                <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-2xl">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('general')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                      activeTab === 'general'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    1. Đề Bài & Thông Tin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('samples')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                      activeTab === 'samples'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    2. Bài Mẫu 3 Band
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('outline')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                      activeTab === 'outline'
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    3. Dàn Ý 4 Phần
+                  </button>
+                </div>
+
+                <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <form onSubmit={handleCreateAssignment} className="space-y-4 text-xs font-semibold">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-slate-700 mb-1">1. Tiêu đề đề thi</label>
-                    <input
-                      type="text"
-                      required
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Ví dụ: Real IELTS Writing 2 - Quy mô lớp học"
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 mb-1">2. Ngày ra đề thi thật</label>
-                    <input
-                      type="date"
-                      value={examDate}
-                      onChange={(e) => setExamDate(e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-700 mb-1">3. Đề bài luận đầy đủ (Prompt)</label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Nhập câu hỏi essay đầy đủ (Ví dụ: Some people think that...)..."
-                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-normal text-sm font-serif leading-relaxed"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-slate-700 mb-1">4. Chủ đề (Topic - Nhập text trực tiếp)</label>
-                    <input
-                      type="text"
-                      required
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      placeholder="Nhập chủ đề (Ví dụ: Education, Environment, Health...)"
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-800"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 mb-1">5. Nhóm Học Viên Đích (targetGroup)</label>
-                    <select
-                      value={targetGroup}
-                      onChange={(e) => setTargetGroup(e.target.value)}
-                      className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-blue-600 cursor-pointer"
-                    >
-                      <option value="support">Support (Cần hỗ trợ)</option>
-                      <option value="average">Average (Trung bình)</option>
-                      <option value="excellent">Excellent (Xuất sắc)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* 3 Ô Nhập Bài Mẫu Riêng Biệt Theo Thang Điểm Dành Cho 3 Nhóm Học Viên */}
-                <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-4">
-                  <div className="flex items-center space-x-2 text-blue-900 font-extrabold text-sm border-b border-blue-100 pb-2">
-                    <Sparkles className="w-4 h-4 text-blue-600" />
-                    <span>Bài Luận Mẫu Thích Ứng Theo 3 Cấp Độ Học Viên (AI sẽ dùng làm dữ liệu chuẩn)</span>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-red-700 font-bold mb-1">
-                        • Bài mẫu Band 6.0 - Dành cho Nhóm Cần Hỗ Trợ (Support Group)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={sampleSupport}
-                        onChange={(e) => setSampleSupport(e.target.value)}
-                        placeholder="Nhập bài essay mẫu ở mức Band 6.0 (từ vựng đơn giản, cấu trúc rõ ràng cho học viên yếu)..."
-                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs leading-relaxed"
-                      ></textarea>
-                    </div>
-
-                    <div>
-                      <label className="block text-amber-700 font-bold mb-1">
-                        • Bài mẫu Band 7.0 - Dành cho Nhóm Trung Bình (Average Group)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={sampleAverage}
-                        onChange={(e) => setSampleAverage(e.target.value)}
-                        placeholder="Nhập bài essay mẫu ở mức Band 7.0 (từ vựng học thuật tốt, áp dụng collocations tự nhiên)..."
-                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs leading-relaxed"
-                      ></textarea>
-                    </div>
-
-                    <div>
-                      <label className="block text-emerald-700 font-bold mb-1">
-                        • Bài mẫu Band 8.5+ - Dành cho Nhóm Xuất Sắc (Excellent Group)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={sampleExcellent}
-                        onChange={(e) => setSampleExcellent(e.target.value)}
-                        placeholder="Nhập bài essay mẫu xuất sắc ở mức Band 8.5+ (từ vựng advanced, lập luận sắc bén)..."
-                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs leading-relaxed"
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dàn ý Scaffolding Template 4 Ô Riêng Biệt (Mở bài, Thân bài 1, Thân bài 2, Kết bài) */}
-                <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-4">
-                  <div className="flex items-center space-x-2 text-amber-900 font-extrabold text-sm border-b border-amber-200/60 pb-2">
-                    <BookOpen className="w-4 h-4 text-amber-600" />
-                    <span>Dàn Ý Gợi Ý Scaffolding Template (Phân Chia 4 Phần Chuẩn Card Box)</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-amber-900 font-bold mb-1">
-                        1. Mở bài (Introduction)
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={outlineIntro}
-                        onChange={(e) => setOutlineIntro(e.target.value)}
-                        placeholder="Ví dụ: Paraphrase đề bài và đưa ra câu trả lời trực tiếp (Thesis Statement)..."
-                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
-                      ></textarea>
-                    </div>
-
-                    <div>
-                      <label className="block text-amber-900 font-bold mb-1">
-                        2. Thân bài 1 (Body Paragraph 1)
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={outlineBody1}
-                        onChange={(e) => setOutlineBody1(e.target.value)}
-                        placeholder="Ví dụ: Ý chính 1 (Topic sentence 1), giải thích nguyên nhân và ví dụ thực tế..."
-                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
-                      ></textarea>
-                    </div>
-
-                    <div>
-                      <label className="block text-amber-900 font-bold mb-1">
-                        3. Thân bài 2 (Body Paragraph 2)
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={outlineBody2}
-                        onChange={(e) => setOutlineBody2(e.target.value)}
-                        placeholder="Ví dụ: Ý chính 2 (Topic sentence 2), phân tích tác động chiều sâu..."
-                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
-                      ></textarea>
-                    </div>
-
-                    <div>
-                      <label className="block text-amber-900 font-bold mb-1">
-                        4. Kết bài (Conclusion)
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={outlineConclusion}
-                        onChange={(e) => setOutlineConclusion(e.target.value)}
-                        placeholder="Ví dụ: Tóm tắt lại 2 quan điểm chính và khẳng định lại lập trường..."
-                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Nhập Suggested Vocabulary nếu chọn targetGroup excellent */}
-                {targetGroup === 'excellent' && (
-                  <div className="p-4 bg-purple-50/60 rounded-2xl border border-purple-100 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <label className="block text-purple-800 font-bold">
-                        Gợi ý Bộ Từ Vựng Nâng Cao & Collocations (Nhóm Excellent)
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleAddVocabRow}
-                        className="px-2.5 py-1 bg-purple-600 text-white rounded-lg text-[11px] font-bold hover:bg-purple-700"
-                      >
-                        + Thêm hàng
-                      </button>
-                    </div>
-
-                    {suggestedVocab.map((row, vIdx) => (
-                      <div key={vIdx} className="grid grid-cols-3 gap-2 items-center bg-white p-2.5 rounded-xl border border-purple-200">
+                {/* TAB 1: General Info & Prompt */}
+                {activeTab === 'general' && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="md:col-span-2">
+                        <label className="block text-slate-700 mb-1">1. Tiêu đề đề thi</label>
                         <input
                           type="text"
-                          placeholder="Từ vựng (Word)"
-                          value={row.word}
-                          onChange={(e) => handleVocabChange(vIdx, 'word', e.target.value)}
-                          className="p-2 border border-slate-200 rounded-lg text-xs"
+                          required
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="Ví dụ: Real IELTS Writing 2 - Quy mô lớp học"
+                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal text-xs"
                         />
-                        <input
-                          type="text"
-                          placeholder="Nghĩa (Meaning)"
-                          value={row.meaning}
-                          onChange={(e) => handleVocabChange(vIdx, 'meaning', e.target.value)}
-                          className="p-2 border border-slate-200 rounded-lg text-xs"
-                        />
-                        <div className="flex space-x-1">
-                          <input
-                            type="text"
-                            placeholder="Collocation"
-                            value={row.collocation}
-                            onChange={(e) => handleVocabChange(vIdx, 'collocation', e.target.value)}
-                            className="p-2 border border-slate-200 rounded-lg text-xs w-full"
-                          />
-                          {suggestedVocab.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveVocabRow(vIdx)}
-                              className="text-red-500 hover:text-red-700 p-1"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
                       </div>
-                    ))}
+
+                      <div>
+                        <label className="block text-slate-700 mb-1">2. Ngày ra đề thi thật</label>
+                        <input
+                          type="date"
+                          value={examDate}
+                          onChange={(e) => setExamDate(e.target.value)}
+                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-700 mb-1">3. Đề bài luận đầy đủ (Prompt)</label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="Nhập câu hỏi essay đầy đủ (Ví dụ: Some people think that...)..."
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal text-xs font-serif leading-relaxed"
+                      ></textarea>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-slate-700 mb-1">4. Chủ đề (Topic)</label>
+                        <input
+                          type="text"
+                          required
+                          value={topic}
+                          onChange={(e) => setTopic(e.target.value)}
+                          placeholder="Nhập chủ đề (Education, Environment...)"
+                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-slate-800"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-slate-700 mb-1">5. Nhóm Học Viên Đích (targetGroup)</label>
+                        <select
+                          value={targetGroup}
+                          onChange={(e) => setTargetGroup(e.target.value)}
+                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-blue-600 cursor-pointer"
+                        >
+                          <option value="support">Support (Cần hỗ trợ)</option>
+                          <option value="average">Average (Trung bình)</option>
+                          <option value="excellent">Excellent (Xuất sắc)</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 )}
 
-                <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-indigo-700"
-                  >
-                    Lưu & Tạo Đề Thi
-                  </button>
+                {/* TAB 2: Sample Answers for 3 Groups */}
+                {activeTab === 'samples' && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div className="p-3 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-3">
+                      <div className="flex items-center space-x-2 text-blue-900 font-extrabold text-xs border-b border-blue-100 pb-1.5">
+                        <Sparkles className="w-4 h-4 text-blue-600" />
+                        <span>Bài Luận Mẫu Thích Ứng Cho 3 Nhóm Học Viên</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-red-700 font-bold mb-1 text-[11px]">
+                            • Bài mẫu Band 6.0 (Support)
+                          </label>
+                          <textarea
+                            rows={5}
+                            value={sampleSupport}
+                            onChange={(e) => setSampleSupport(e.target.value)}
+                            placeholder="Nhập bài essay mẫu ở mức Band 6.0..."
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px] leading-relaxed"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label className="block text-amber-700 font-bold mb-1 text-[11px]">
+                            • Bài mẫu Band 7.0 (Average)
+                          </label>
+                          <textarea
+                            rows={5}
+                            value={sampleAverage}
+                            onChange={(e) => setSampleAverage(e.target.value)}
+                            placeholder="Nhập bài essay mẫu ở mức Band 7.0..."
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px] leading-relaxed"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label className="block text-emerald-700 font-bold mb-1 text-[11px]">
+                            • Bài mẫu Band 8.5+ (Excellent)
+                          </label>
+                          <textarea
+                            rows={5}
+                            value={sampleExcellent}
+                            onChange={(e) => setSampleExcellent(e.target.value)}
+                            placeholder="Nhập bài essay mẫu xuất sắc ở mức Band 8.5+..."
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px] leading-relaxed"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: 4-Part Scaffolding Outline */}
+                {activeTab === 'outline' && (
+                  <div className="space-y-3 animate-fadeIn">
+                    <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-3">
+                      <div className="flex items-center space-x-2 text-amber-900 font-extrabold text-xs border-b border-amber-200/60 pb-1.5">
+                        <BookOpen className="w-4 h-4 text-amber-600" />
+                        <span>Dàn Ý Scaffolding 4 Phần Cho Nhóm Yếu & Trung Bình</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                            1. Mở bài (Introduction)
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={outlineIntro}
+                            onChange={(e) => setOutlineIntro(e.target.value)}
+                            placeholder="Paraphrase đề bài và câu trả lời trực tiếp..."
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                            2. Thân bài 1 (Body Paragraph 1)
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={outlineBody1}
+                            onChange={(e) => setOutlineBody1(e.target.value)}
+                            placeholder="Ý chính 1, giải thích nguyên nhân..."
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                            3. Thân bài 2 (Body Paragraph 2)
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={outlineBody2}
+                            onChange={(e) => setOutlineBody2(e.target.value)}
+                            placeholder="Ý chính 2, phân tích tác động..."
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                          ></textarea>
+                        </div>
+
+                        <div>
+                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                            4. Kết bài (Conclusion)
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={outlineConclusion}
+                            onChange={(e) => setOutlineConclusion(e.target.value)}
+                            placeholder="Tóm tắt quan điểm và khẳng định lập trường..."
+                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center pt-3 border-t border-slate-100">
+                  <div className="text-[11px] text-slate-400">
+                    {activeTab === 'general' && 'Bước 1/3: Nhập thông tin tổng quan đề thi'}
+                    {activeTab === 'samples' && 'Bước 2/3: Cấu hình bài essay mẫu thích ứng'}
+                    {activeTab === 'outline' && 'Bước 3/3: Phân chia 4 phần dàn ý chuẩn Card Box'}
+                  </div>
+
+                  <div className="flex space-x-2">
+                    {activeTab !== 'general' && (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab(activeTab === 'outline' ? 'samples' : 'general')}
+                        className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition"
+                      >
+                        Quay Lại
+                      </button>
+                    )}
+
+                    {activeTab !== 'outline' ? (
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab(activeTab === 'general' ? 'samples' : 'outline')}
+                        className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition"
+                      >
+                        Tiếp Theo
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-indigo-700 shadow-md transition"
+                      >
+                        Lưu & Tạo Đề Thi
+                      </button>
+                    )}
+                  </div>
                 </div>
               </form>
             </div>

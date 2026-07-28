@@ -222,8 +222,8 @@ const AdminStudentsMonitor = () => {
 
         {/* Modal Xem Lịch Sử Bài Viết & Kết Quả GPT-4o Chấm */}
         {showDetailModal && selectedStudent && (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl space-y-6 border border-slate-200 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl space-y-5 border border-slate-200 no-scrollbar overflow-hidden">
               <div className="flex justify-between items-center border-b border-slate-100 pb-4">
                 <div>
                   <h3 className="text-xl font-extrabold text-slate-800">
