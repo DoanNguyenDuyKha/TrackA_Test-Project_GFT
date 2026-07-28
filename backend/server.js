@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
@@ -10,8 +12,45 @@ const lectureRoutes = require('./routes/lectures');
 const submissionRoutes = require('./routes/submissions');
 const gradingRoutes = require('./routes/grading');
 const adaptiveSampleRoutes = require('./routes/adaptiveSample');
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
+const server = http.createServer(app);
+
+// Initialize Socket.IO with CORS settings
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  }
+});
+
+// Attach io to express app so routes can access req.app.get('io')
+app.set('io', io);
+
+// Socket.IO Room Management & Connections
+io.on('connection', (socket) => {
+  console.log(`⚡ [Socket.IO] Client Connected: ${socket.id}`);
+
+  // User join personal room by userId
+  socket.on('join_user_room', (userId) => {
+    if (userId) {
+      socket.join(userId.toString());
+      console.log(`👤 User Joined Room: ${userId}`);
+    }
+  });
+
+  // Admin join admins_room for realtime submission alerts
+  socket.on('join_admin_room', () => {
+    socket.join('admins_room');
+    console.log(`🛡️ Admin Joined Room: admins_room`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`🔌 [Socket.IO] Client Disconnected: ${socket.id}`);
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://doannguyenduykha08_db_user:Kha.0804@englishadaptivelms.6dtqe9l.mongodb.net/lms_adaptive?appName=EnglishAdaptiveLMS';
 
@@ -32,10 +71,11 @@ app.use('/api/lectures', lectureRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/grading', gradingRoutes);
 app.use('/api/assignments', adaptiveSampleRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'LMS Backend Server is running smoothly' });
+  res.status(200).json({ status: 'OK', message: 'LMS Backend Server with Realtime Socket.IO is running smoothly' });
 });
 
 // Global 404 Route Handler
@@ -53,11 +93,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start listening if run directly
+// Start listening HTTP server with Socket.IO attached
 if (require.main === module) {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`================================================`);
-    console.log(`   LMS Backend Server running on port ${PORT}   `);
+    console.log(`   LMS Backend & Socket.IO running on port ${PORT}   `);
     console.log(`================================================`);
   });
 }

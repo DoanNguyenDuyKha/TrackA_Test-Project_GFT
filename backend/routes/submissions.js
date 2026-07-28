@@ -37,6 +37,37 @@ router.post('/', authenticateToken, async (req, res) => {
       detailedCorrections: detailedCorrections || []
     });
 
+    // 🔔 REALTIME NOTIFICATION (TẠO THÔNG BÁO THỜI GIAN THỰC CHO ADMIN KHI HỌC VIÊN NỘP BÀI)
+    try {
+      const Notification = require('../models/Notification');
+      const admins = await User.find({ role: 'admin' });
+      const notifDocs = admins.map(admin => ({
+        recipientId: admin._id,
+        senderId: req.user._id,
+        senderName: req.user.name || 'Học Viên',
+        type: 'submission_alert',
+        title: '📩 Bài Nộp Mới Từ Học Viên!',
+        message: `Học viên ${req.user.name} (${req.user.studentGroup?.toUpperCase()}) vừa nộp bài luận "${assignment.title}" và đạt ${defaultOverallBand} Band!`
+      }));
+
+      await Notification.insertMany(notifDocs);
+
+      // Realtime Socket broadcast tới phòng 'admins_room'
+      const io = req.app.get('io');
+      if (io) {
+        io.to('admins_room').emit('admin_submission_alert', {
+          submissionId: submission._id,
+          studentName: req.user.name,
+          studentGroup: req.user.studentGroup,
+          assignmentTitle: assignment.title,
+          overallBand: defaultOverallBand,
+          submittedAt: new Date()
+        });
+      }
+    } catch (notifErr) {
+      console.error('Error creating realtime submission alert:', notifErr.message);
+    }
+
     // Tự động phân nhóm lại năng lực của Student dựa trên điểm số mới nhất
     if (req.user.role === 'student') {
       let newGroup = req.user.studentGroup;
