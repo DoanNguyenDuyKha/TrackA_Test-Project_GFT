@@ -370,125 +370,144 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Modal Admin Gửi Tài Liệu & Thông Báo Realtime Cho Học Viên */}
+      {/* Modal Admin Gửi Tài Liệu & Thông Báo Realtime Cho Học Viên (Kích Thước Lớn Rộng Rãi) */}
       {showSendDocModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 animate-scaleUp">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="text-lg font-black text-slate-800 flex items-center">
-                <Send className="w-5 h-5 mr-2 text-indigo-600" />
-                Gửi Tài Liệu & Thông Báo Realtime
-              </h3>
-              <button onClick={() => setShowSendDocModal(false)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-4xl w-full max-h-[90vh] flex flex-col justify-between shadow-2xl space-y-4 border border-slate-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                  <Send className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-800">
+                    Gửi Tài Liệu & Phát Thông Báo Realtime
+                  </h3>
+                  <p className="text-xs text-slate-400">Tải tệp từ máy tính cá nhân hoặc gửi URL tài liệu bổ trợ tới học viên</p>
+                </div>
+              </div>
+
+              <button onClick={() => setShowSendDocModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            <form onSubmit={handleSendDocument} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Tiêu Đề Thông Báo *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="VD: Tài liệu bổ trợ cấu trúc Complex Sentences Band 7.5"
-                  value={docTitle}
-                  onChange={(e) => setDocTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+            {/* Modal Scrollable Form Body */}
+            <form onSubmit={handleSendDocument} className="flex-1 flex flex-col justify-between space-y-4 text-xs font-semibold overflow-y-auto no-scrollbar pr-1">
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">1. Tiêu Đề Thông Báo *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="VD: Tài liệu bổ trợ cấu trúc Complex Sentences Band 7.5"
+                      value={docTitle}
+                      onChange={(e) => setDocTitle(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 transition"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nội Dung Nhắn Gửi *</label>
-                <textarea
-                  required
-                  rows="3"
-                  placeholder="Nhập nội dung lời nhắn tới học viên..."
-                  value={docMessage}
-                  onChange={(e) => setDocMessage(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500"
-                ></textarea>
-              </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">2. 🎯 Người Nhận (Gửi Riêng HOẶC Theo Nhóm)</label>
+                    <select
+                      value={selectedStudentId}
+                      onChange={(e) => setSelectedStudentId(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-2xl border border-indigo-200 text-sm bg-indigo-50/50 font-bold text-indigo-900 focus:ring-2 focus:ring-indigo-500 transition"
+                    >
+                      <option value="">-- Gửi Theo Nhóm Học Viên --</option>
+                      {studentsList.map(st => (
+                        <option key={st._id} value={st._id}>
+                          👤 Gửi Riêng Cho: {st.name} ({st.email}) - Group: {st.studentGroup?.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">📁 Tải Tệp Từ Máy Tính Cá Nhân (PDF/Docx/Image)</label>
-                <input
-                  type="file"
-                  onChange={handleLocalFileUpload}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
-                />
-                {docName && (
-                  <p className="text-[11px] font-bold text-indigo-600 mt-1 flex items-center">
-                    <Check className="w-3.5 h-3.5 mr-1" /> Đã chọn tệp: {docName}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Hoặc Nhập URL Tài Liệu</label>
-                  <input
-                    type="url"
-                    placeholder="https://drive.google.com/..."
-                    value={docUrl}
-                    onChange={(e) => setDocUrl(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
-                  />
+                    {!selectedStudentId && (
+                      <select
+                        value={docTargetGroup}
+                        onChange={(e) => setDocTargetGroup(e.target.value)}
+                        className="w-full px-4 py-2 rounded-2xl border border-slate-200 text-xs bg-slate-50 font-bold text-slate-700 mt-1.5"
+                      >
+                        <option value="all">🌐 Tất Cả Học Viên Trong Hệ Thống</option>
+                        <option value="support">🔴 Chỉ Nhóm Cần Hỗ Trợ (&lt; 6.0 Band)</option>
+                        <option value="average">🟡 Chỉ Nhóm Trung Bình (6.0 - 6.5 Band)</option>
+                        <option value="excellent">🟣 Chỉ Nhóm Xuất Sắc (7.0 - 8.5+ Band)</option>
+                      </select>
+                    )}
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Tên Tệp Hiển Thị</label>
-                  <input
-                    type="text"
-                    placeholder="tai_lieu_task2.pdf"
-                    value={docName}
-                    onChange={(e) => setDocName(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
-                  />
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">3. Nội Dung Nhắn Gửi Tới Học Viên *</label>
+                  <textarea
+                    required
+                    rows={3}
+                    placeholder="Nhập nội dung hướng dẫn học tập chi tiết tới học viên..."
+                    value={docMessage}
+                    onChange={(e) => setDocMessage(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 leading-relaxed transition"
+                  ></textarea>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 uppercase mb-1.5">
+                      📁 Tải Tệp Trực Tiếp Từ Máy Tính Cá Nhân (PDF / DOCX / Image)
+                    </label>
+                    <input
+                      type="file"
+                      onChange={handleLocalFileUpload}
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200 cursor-pointer"
+                    />
+                    {docName && (
+                      <p className="text-xs font-bold text-indigo-600 mt-1.5 flex items-center">
+                        <Check className="w-4 h-4 mr-1 text-emerald-600" /> Đã chọn tệp: {docName}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Hoặc Nhập URL Tài Liệu Online</label>
+                      <input
+                        type="url"
+                        placeholder="https://drive.google.com/..."
+                        value={docUrl}
+                        onChange={(e) => setDocUrl(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Tên Tệp Hiển Thị</label>
+                      <input
+                        type="text"
+                        placeholder="tai_lieu_task2.pdf"
+                        value={docName}
+                        onChange={(e) => setDocName(e.target.value)}
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">🎯 Người Nhận (Gửi Riêng HOẶC Theo Nhóm)</label>
-                <select
-                  value={selectedStudentId}
-                  onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-indigo-200 text-sm bg-indigo-50/50 font-bold mb-2 text-indigo-900"
-                >
-                  <option value="">-- Gửi Theo Nhóm Nhận Bên Dưới --</option>
-                  {studentsList.map(st => (
-                    <option key={st._id} value={st._id}>
-                      👤 Gửi Riêng Cho: {st.name} ({st.email}) - Group: {st.studentGroup?.toUpperCase()}
-                    </option>
-                  ))}
-                </select>
-
-                {!selectedStudentId && (
-                  <select
-                    value={docTargetGroup}
-                    onChange={(e) => setDocTargetGroup(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 font-bold text-slate-700"
-                  >
-                    <option value="all">🌐 Tất Cả Học Viên Trong Hệ Thống</option>
-                    <option value="support">🔴 Chỉ Nhóm Cần Hỗ Trợ (&lt; 6.0 Band)</option>
-                    <option value="average">🟡 Chỉ Nhóm Trung Bình (6.0 - 6.5 Band)</option>
-                    <option value="excellent">🟣 Chỉ Nhóm Xuất Sắc (7.0 - 8.5+ Band)</option>
-                  </select>
-                )}
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-3">
+              {/* Fixed Footer Buttons */}
+              <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100 shrink-0 mt-2">
                 <button
                   type="button"
                   onClick={() => setShowSendDocModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-2xl transition"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={sendingDoc}
-                  className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl shadow-lg hover:shadow-xl transition"
+                  className="px-8 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-2xl shadow-lg hover:shadow-xl transition"
                 >
-                  {sendingDoc ? 'Đang Gửi Realtime...' : 'Phát Thông Báo Realtime 🚀'}
+                  {sendingDoc ? 'Đang Phát Realtime...' : 'Phát Thông Báo Realtime 🚀'}
                 </button>
               </div>
             </form>
