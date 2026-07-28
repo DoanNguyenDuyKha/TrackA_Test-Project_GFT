@@ -18,6 +18,21 @@ router.get('/', authenticateToken, async (req, res) => {
       query.topic = req.query.topic;
     }
 
+    // Học viên thường (Support, Average) không nhìn thấy các đề thi AI độc bản của nhóm Excellent
+    // Học viên Xuất Sắc (Excellent) chỉ nhìn thấy các bài thi AI do chính họ yêu cầu khởi tạo
+    if (req.user.role === 'student') {
+      if (req.user.studentGroup === 'excellent') {
+        // Chỉ lấy đề gốc chính thức HOẶC đề AI độc bản do chính học viên này yêu cầu khởi tạo
+        query.$or = [
+          { title: { $not: /^AI Master Exam/ } },
+          { createdBy: req.user._id }
+        ];
+      } else {
+        // Ẩn hoàn toàn các bài AI Master Exam dành cho học viên nhóm Support và Average
+        query.title = { $not: /^AI Master Exam/ };
+      }
+    }
+
     const assignments = await Assignment.find(query)
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 });
