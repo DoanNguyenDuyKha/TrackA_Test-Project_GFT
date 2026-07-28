@@ -25,6 +25,8 @@ const Navbar = () => {
   const [docUrl, setDocUrl] = useState('');
   const [docName, setDocName] = useState('');
   const [docTargetGroup, setDocTargetGroup] = useState('all');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [studentsList, setStudentsList] = useState([]);
   const [sendingDoc, setSendingDoc] = useState(false);
 
   const fetchNotifications = async () => {
@@ -39,11 +41,37 @@ const Navbar = () => {
     }
   };
 
+  const fetchStudentsList = async () => {
+    try {
+      const res = await api.get('/auth/students');
+      if (res.data.success) {
+        setStudentsList(res.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching students list:', err);
+    }
+  };
+
+  // Xử lý upload tệp từ máy tính cá nhân của Admin
+  const handleLocalFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setDocUrl(uploadEvent.target.result); // Base64 URL preview & download
+        setDocName(file.name);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchNotifications();
+      if (user.role === 'admin') {
+        fetchStudentsList();
+      }
 
-      // Kết nối Realtime Socket.IO Server
       if (!socket) {
         socket = io(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
       }
@@ -98,7 +126,8 @@ const Navbar = () => {
         message: docMessage,
         documentUrl: docUrl,
         documentName: docName,
-        targetGroup: docTargetGroup
+        targetGroup: docTargetGroup,
+        recipientId: selectedStudentId || undefined
       });
 
       if (res.data.success) {
@@ -109,6 +138,7 @@ const Navbar = () => {
         setDocUrl('');
         setDocName('');
         setDocTargetGroup('all');
+        setSelectedStudentId('');
       }
     } catch (err) {
       console.error('Error sending document:', err);
@@ -379,9 +409,23 @@ const Navbar = () => {
                 ></textarea>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">📁 Tải Tệp Từ Máy Tính Cá Nhân (PDF/Docx/Image)</label>
+                <input
+                  type="file"
+                  onChange={handleLocalFileUpload}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-100 file:text-indigo-700 hover:file:bg-indigo-200"
+                />
+                {docName && (
+                  <p className="text-[11px] font-bold text-indigo-600 mt-1 flex items-center">
+                    <Check className="w-3.5 h-3.5 mr-1" /> Đã chọn tệp: {docName}
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Đường Dẫn Tài Liệu (URL)</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Hoặc Nhập URL Tài Liệu</label>
                   <input
                     type="url"
                     placeholder="https://drive.google.com/..."
@@ -391,7 +435,7 @@ const Navbar = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Tên Tệp Tài Liệu</label>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Tên Tệp Hiển Thị</label>
                   <input
                     type="text"
                     placeholder="tai_lieu_task2.pdf"
@@ -403,17 +447,32 @@ const Navbar = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Nhóm Học Viên Nhận *</label>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">🎯 Người Nhận (Gửi Riêng HOẶC Theo Nhóm)</label>
                 <select
-                  value={docTargetGroup}
-                  onChange={(e) => setDocTargetGroup(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 font-bold"
+                  value={selectedStudentId}
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-indigo-200 text-sm bg-indigo-50/50 font-bold mb-2 text-indigo-900"
                 >
-                  <option value="all">🌐 Tất Cả Học Viên Trong Hệ Thống</option>
-                  <option value="support">🔴 Chỉ Nhóm Cần Hỗ Trợ (&lt; 6.0 Band)</option>
-                  <option value="average">🟡 Chỉ Nhóm Trung Bình (6.0 - 6.5 Band)</option>
-                  <option value="excellent">🟣 Chỉ Nhóm Xuất Sắc (7.0 - 8.5+ Band)</option>
+                  <option value="">-- Gửi Theo Nhóm Nhận Bên Dưới --</option>
+                  {studentsList.map(st => (
+                    <option key={st._id} value={st._id}>
+                      👤 Gửi Riêng Cho: {st.name} ({st.email}) - Group: {st.studentGroup?.toUpperCase()}
+                    </option>
+                  ))}
                 </select>
+
+                {!selectedStudentId && (
+                  <select
+                    value={docTargetGroup}
+                    onChange={(e) => setDocTargetGroup(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 font-bold text-slate-700"
+                  >
+                    <option value="all">🌐 Tất Cả Học Viên Trong Hệ Thống</option>
+                    <option value="support">🔴 Chỉ Nhóm Cần Hỗ Trợ (&lt; 6.0 Band)</option>
+                    <option value="average">🟡 Chỉ Nhóm Trung Bình (6.0 - 6.5 Band)</option>
+                    <option value="excellent">🟣 Chỉ Nhóm Xuất Sắc (7.0 - 8.5+ Band)</option>
+                  </select>
+                )}
               </div>
 
               <div className="flex justify-end space-x-3 pt-3">

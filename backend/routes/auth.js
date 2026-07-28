@@ -3,7 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { authenticateToken, JWT_SECRET } = require('../middleware/auth');
+const { authenticateToken, requireAdmin, JWT_SECRET } = require('../middleware/auth');
 
 // POST /api/auth/register - Đăng ký tài khoản
 router.post('/register', async (req, res) => {
@@ -160,6 +160,23 @@ router.put('/users/:id/override-group', authenticateToken, requireAdmin, async (
   } catch (error) {
     console.error('Admin Override Error:', error);
     return res.status(500).json({ success: false, message: 'Error performing manual override', error: error.message });
+  }
+});
+
+// GET /api/auth/students - Admin lấy danh sách toàn bộ học viên
+router.get('/students', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const students = await User.find({ role: 'student' })
+      .select('-password')
+      .sort({ name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      data: students
+    });
+  } catch (error) {
+    console.error('GET Students Error:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching students list', error: error.message });
   }
 });
 
