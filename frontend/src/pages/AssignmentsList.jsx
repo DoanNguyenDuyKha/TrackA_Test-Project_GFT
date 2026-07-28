@@ -85,9 +85,20 @@ const AssignmentsList = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {assignments
               .filter(item => {
-                if (user?.role === 'student' && user?.studentGroup !== 'excellent') {
+                if (user?.role === 'student') {
+                  // Phân loại tự động đề thi thích ứng theo nhóm năng lực của học viên (support, average, excellent)
+                  const studentGroup = user?.studentGroup || 'support';
+
+                  // Loại bỏ bài AI Master Exam đối với nhóm support & average
                   const isAiExam = item.title?.includes('AI Master Exam') || item.title?.includes('Test Code #') || item.prompt?.includes('Test Code #');
-                  return !isAiExam;
+                  if (studentGroup !== 'excellent' && isAiExam) {
+                    return false;
+                  }
+
+                  // Lọc đề thi bám sát targetGroup phù hợp năng lực học viên
+                  if (item.targetGroup && item.targetGroup !== studentGroup) {
+                    return false;
+                  }
                 }
                 return true;
               })

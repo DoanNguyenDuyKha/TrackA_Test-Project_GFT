@@ -22,23 +22,26 @@ router.get('/', authenticateToken, async (req, res) => {
       .populate('createdBy', 'name email')
       .sort({ createdAt: -1 });
 
-    // Phân quyền bảo mật tuyệt đối đề thi AI Độc Bản:
-    // - Học viên nhóm Support & Average: Ẩn hoàn toàn 100% tất cả các đề thi AI độc bản
-    // - Học viên nhóm Excellent: Chỉ xem được các đề thi AI do CHÍNH HỌ yêu cầu khởi tạo (createdBy === userId)
+    // Phân loại tự động đề thi thích ứng (Adaptive Filtering):
+    // - Chỉ trả về các đề thi có targetGroup trùng khớp với nhóm năng lực của học viên (support, average, excellent)
+    // - Đối với nhóm Excellent: thêm điều kiện bảo mật chỉ lấy đề AI do chính học viên đó tạo
     if (req.user.role === 'student') {
-      if (req.user.studentGroup === 'excellent') {
+      const studentGroup = req.user.studentGroup || 'support';
+
+      if (studentGroup === 'excellent') {
         assignments = assignments.filter(item => {
           const isAiExam = item.title.includes('AI Master Exam') || item.title.includes('Test Code #') || item.prompt.includes('Test Code #');
           if (isAiExam) {
             return item.createdBy && item.createdBy._id && item.createdBy._id.toString() === req.user._id.toString();
           }
-          return true;
+          return item.targetGroup === 'excellent';
         });
       } else {
-        // Loại bỏ hoàn toàn tất cả bài thi AI khỏi danh sách của học viên nhóm Support và Average
+        // Học viên Support và Average chỉ xem các đề có targetGroup trùng khớp với nhóm của họ và không phải đề AI Master Exam
         assignments = assignments.filter(item => {
-          const isAiExam = item.title.includes('AI Master Exam') || item.title.includes('Test Code #') || item.prompt.includes('Test Code #');
-          return !isAiExam;
+          const isAiExam = item.title.includes('AI Master Exam') || item.title.includes('Test Code #') || item.prompt.includes('Test Route #') || item.prompt.includes('Test Code #');
+          if (isAiExam) return false;
+          return item.targetGroup === studentGroup;
         });
       }
     }
