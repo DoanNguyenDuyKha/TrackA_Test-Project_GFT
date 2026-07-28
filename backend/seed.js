@@ -61,6 +61,32 @@ On the one hand, critics of history education argue that rapid technological adv
 On the one hand, studying history provides indispensable insights into human behavior, cultural identity, and political development. Historical analysis enables policymakers to comprehend the root causes of international conflicts and economic crises, thereby preventing the repetition of catastrophic past mistakes such as global wars or hyperinflation. Moreover, history fosters cultural awareness and national identity, helping citizens appreciate how modern democratic institutions and social values were forged.
 
 In conclusion, although technological progress rapidly alters daily life, historical knowledge remains an essential beacon that guides contemporary decision-making and protects societal stability.`,
+        groupSampleAnswers: {
+          support: `### 📝 Bài Mẫu Band 6.0 (Dành riêng cho Nhóm Cần Hỗ Trợ - Cấu trúc đơn giản, từ vựng dễ hiểu):
+Many people think that learning history is not useful today, but others believe history helps us understand the present. In my opinion, history is very important for our future.
+
+On the one hand, some people say history is useless because technology is changing fast. Young people prefer learning computer skills and science rather than old historical facts.
+
+On the other hand, learning history brings many benefits. Firstly, history teaches us lessons from past mistakes, so countries can avoid war and financial crisis. Secondly, history helps us understand our national culture and traditional values.
+
+In conclusion, although technology is essential, studying history is still necessary for everyone.`,
+          average: `### 📝 Bài Mẫu Band 7.0 (Dành riêng cho Nhóm Trung Bình - Từ vựng học thuật tốt, collocations tự nhiên):
+Opinions differ on whether studying historical events remains beneficial in contemporary society. While some argue that past events have little relevance in today's modern world, I firmly believe that historical knowledge plays a crucial role in shaping our current decisions.
+
+On the one hand, opponents of history argue that rapid technological innovations render past experiences less applicable. In today's digital era, economic development relies heavily on technological skills rather than historical data.
+
+On the other hand, analyzing history provides valuable lessons for modern governance. Historical events allow policymakers to understand the origins of global issues and prevent catastrophic mistakes. Furthermore, history strengthens cultural identity and social cohesion.
+
+In conclusion, despite fast-paced modern developments, historical awareness remains an essential guide for societal progress.`,
+          excellent: `### 📝 Bài Mẫu Band 8.5+ (Dành riêng cho Nhóm Xuất Sắc - Bộ từ vựng advanced, lập luận sắc bén):
+The debate over the relevance of historical studies in the modern era continues to spark diverse opinions. While some individuals argue that history offers minimal practical value in today's fast-paced technological world, I strongly believe that analyzing past historical events is vital for understanding contemporary societal challenges and shaping a better future.
+
+On the one hand, critics of history education argue that rapid technological advancements render past experiences obsolete. In an era dominated by artificial intelligence, automation, and global digitalization, solutions to modern problems often require innovative technical skills rather than historical knowledge. Furthermore, economic paradigms and social structures have evolved so dramatically that traditional governance methods may no longer apply directly to complex modern financial systems.
+
+On the one hand, studying history provides indispensable insights into human behavior, cultural identity, and political development. Historical analysis enables policymakers to comprehend the root causes of international conflicts and economic crises, thereby preventing the repetition of catastrophic past mistakes such as global wars or hyperinflation. Moreover, history fosters cultural awareness and national identity, helping citizens appreciate how modern democratic institutions and social values were forged.
+
+In conclusion, although technological progress rapidly alters daily life, historical knowledge remains an essential beacon that guides contemporary decision-making and protects societal stability.`
+        },
         suggestedVocabulary: [
           { word: 'historical insights', meaning: 'Sự hiểu biết sâu sắc về lịch sử', collocation: 'indispensable historical insights' },
           { word: 'contemporary challenges', meaning: 'Các thách thức đương đại', collocation: 'understanding contemporary societal challenges' },

@@ -128,7 +128,7 @@ router.post('/:id/generate-adaptive-sample', authenticateToken, async (req, res)
   }
 });
 
-// GET /api/assignments/:id - Chi tiết 1 đề thi
+// GET /api/assignments/:id - Chi tiết 1 đề thi (Tự động lấy đúng đoạn văn Admin đã viết theo nhóm học viên)
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id).populate('createdBy', 'name email');
@@ -136,9 +136,17 @@ router.get('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Assignment not found' });
     }
 
+    const studentObj = assignment.toObject();
+    const studentGroup = req.user?.studentGroup || 'support';
+
+    // Đảm bảo sampleAnswer trả về ĐÚNG 100% đoạn văn Admin đã viết ở ô tương ứng với nhóm học viên
+    if (studentObj.groupSampleAnswers && studentObj.groupSampleAnswers[studentGroup] && studentObj.groupSampleAnswers[studentGroup].trim() !== '') {
+      studentObj.sampleAnswer = studentObj.groupSampleAnswers[studentGroup];
+    }
+
     return res.status(200).json({
       success: true,
-      data: assignment
+      data: studentObj
     });
   } catch (error) {
     console.error('GET Single Assignment Error:', error);
