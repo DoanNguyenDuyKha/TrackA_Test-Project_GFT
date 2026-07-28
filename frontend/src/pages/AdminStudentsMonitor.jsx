@@ -15,27 +15,33 @@ const AdminStudentsMonitor = () => {
 
   const fetchMonitorData = async () => {
     try {
-      const res = await api.get('/submissions');
-      if (res.data.success) {
-        setSubmissions(res.data.data);
+      const [subRes, studentsRes] = await Promise.all([
+        api.get('/submissions'),
+        api.get('/auth/students')
+      ]);
 
-        // Bóc tách danh sách unique học viên
-        const studentMap = {};
-        res.data.data.forEach(sub => {
-          if (sub.studentId && sub.studentId._id) {
-            const sId = sub.studentId._id;
-            if (!studentMap[sId]) {
-              studentMap[sId] = {
-                ...sub.studentId,
-                submissionCount: 0,
-                lastOverall: sub.overallBand
-              };
-            }
-            studentMap[sId].submissionCount += 1;
-          }
+      if (subRes.data.success) {
+        setSubmissions(subRes.data.data);
+      }
+
+      if (studentsRes.data.success) {
+        const allStudents = studentsRes.data.data;
+        const subs = subRes.data.success ? subRes.data.data : [];
+
+        // Tính toán số lượng bài nộp và điểm nộp bài gần nhất cho tất cả học viên trong hệ thống
+        const enrichedStudents = allStudents.map(student => {
+          const studentSubs = subs.filter(s => s.studentId?._id === student._id);
+          return {
+            ...student,
+            submissionCount: studentSubs.length,
+            lastOverall: studentSubs.length > 0 ? studentSubs[0].overallBand : 'Chưa nộp',
+            movingAvg: studentSubs.length > 0
+              ? (studentSubs.slice(0, 5).reduce((acc, s) => acc + s.overallBand, 0) / Math.min(5, studentSubs.length)).toFixed(1)
+              : 'N/A'
+          };
         });
 
-        setUsers(Object.values(studentMap));
+        setUsers(enrichedStudents);
       }
     } catch (err) {
       console.error('Error fetching monitor data:', err);
@@ -107,38 +113,47 @@ const AdminStudentsMonitor = () => {
                 <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
                   <th className="p-4">Học viên</th>
                   <th className="p-4">Email</th>
-                  <th className="p-4">Nhóm Thích Ứng Hiện Tại</th>
-                  <th className="p-4 text-center">Số Bài Đã Nộp</th>
-                  <th className="p-4 text-center">Can Thiệp Thủ Công (Override)</th>
-                  <th className="p-4 text-right">Chi Tiết</th>
+                  <th className="p-4">Nhóm Thích Ứng Currently</th>
+                  <th className="p-4 text-center">Số Bài Nộp</th>
+                  <th className="p-4 text-center">Band Trung Bình Động (MA 5)</th>
+                  <th className="p-4 text-center">Can Thiệp Sư Phạm (Override)</th>
+                  <th className="p-4 text-right">Giám Sát Chi Tiết</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
                 {users.map((student) => (
                   <tr key={student._id} className="hover:bg-slate-50/80 transition">
-                    <td className="p-4 font-bold text-slate-800">{student.name}</td>
+                    <td className="p-4">
+                      <div className="font-bold text-slate-800">{student.name}</div>
+                      <span className="text-[10px] font-semibold text-slate-400">Target: {student.targetBand || 6.5} Band</span>
+                    </td>
                     <td className="p-4 text-xs text-slate-600 font-mono">{student.email}</td>
                     <td className="p-4">{getBadge(student.studentGroup)}</td>
                     <td className="p-4 text-center font-bold text-slate-700">{student.submissionCount}</td>
+                    <td className="p-4 text-center">
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-xs rounded-full border border-blue-100">
+                        {student.movingAvg} Band
+                      </span>
+                    </td>
                     <td className="p-4 text-center">
                       {/* Manual Override Dropdown */}
                       <select
                         value={student.studentGroup || 'support'}
                         onChange={(e) => handleOverrideGroup(student._id, e.target.value)}
-                        className="px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-800"
+                        className="px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-200 transition"
                       >
-                        <option value="support">Set: Support</option>
-                        <option value="average">Set: Average</option>
-                        <option value="excellent">Set: Excellent</option>
+                        <option value="support">Set: Support (&lt;6.0)</option>
+                        <option value="average">Set: Average (6.0-6.5)</option>
+                        <option value="excellent">Set: Excellent (7.0+)</option>
                       </select>
                     </td>
                     <td className="p-4 text-right">
                       <button
                         onClick={() => handleInspectStudent(student)}
-                        className="px-3.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold text-xs rounded-xl transition inline-flex items-center space-x-1"
+                        className="px-3.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-extrabold text-xs rounded-xl transition inline-flex items-center space-x-1 border border-indigo-100 shadow-sm"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>Xem Lịch Sử</span>
+                        <span>Xem Tiến Độ</span>
                       </button>
                     </td>
                   </tr>
