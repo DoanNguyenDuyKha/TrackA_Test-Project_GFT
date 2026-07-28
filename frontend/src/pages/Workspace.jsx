@@ -313,14 +313,70 @@ const Workspace = () => {
                   </div>
                 )}
 
-                {/* 2. Tab Dàn Ý (Trình Trình Bày Chuẩn Định Dạng Văn Bản / Clean Structured Format) */}
+                {/* 2. Tab Dàn Ý Card-Grid Box trực quan & Sentence Starters cho Nhóm Support */}
                 {activeTab === 'outline' && (
                   <div className="space-y-4 animate-fadeIn">
-                    <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200">
-                      <p className="text-xs font-black text-amber-900 uppercase">😵 DÀN Ý CHI TIẾT 4 PHẦN (OUTLINE):</p>
+                    <div className="p-4 bg-amber-50/80 rounded-2xl border border-amber-200 flex items-center justify-between">
+                      <p className="text-xs font-black text-amber-900 uppercase">😵 DÀN Ý GIÀN GIÁO 4 PHẦN (CARD-GRID SCAFFOLDING):</p>
+                      {user?.studentGroup === 'support' && (
+                        <span className="px-2.5 py-0.5 bg-amber-200 text-amber-900 font-extrabold text-[10px] rounded-full">
+                          Kèm Mẫu Câu Gợi Mở
+                        </span>
+                      )}
                     </div>
-                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 text-sm leading-relaxed text-slate-800 whitespace-pre-wrap font-sans space-y-2">
-                      {assignment.scaffoldingTemplate || 'Đang cập nhật dàn ý chi tiết...'}
+
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200 space-y-1.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-6 h-6 rounded-full bg-amber-500 text-white font-black text-xs flex items-center justify-center">1</span>
+                          <h4 className="font-extrabold text-amber-900 text-xs uppercase">Mở bài (Introduction)</h4>
+                        </div>
+                        <p className="text-xs text-slate-700 leading-relaxed">Paraphrase đề bài + Nêu quan điểm cá nhân.</p>
+                        {user?.studentGroup === 'support' && (
+                          <div className="p-2.5 bg-white rounded-xl border border-amber-100 text-[11px] text-amber-900 font-mono">
+                            👉 <strong>Mẫu câu mở đầu:</strong> "It is argued that... While I accept that..., I believe..."
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-200 space-y-1.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-black text-xs flex items-center justify-center">2</span>
+                          <h4 className="font-extrabold text-blue-900 text-xs uppercase">Thân bài 1 (Body 1)</h4>
+                        </div>
+                        <p className="text-xs text-slate-700 leading-relaxed">Phân tích lý do hoặc khía cạnh thứ nhất của vấn đề.</p>
+                        {user?.studentGroup === 'support' && (
+                          <div className="p-2.5 bg-white rounded-xl border border-blue-100 text-[11px] text-blue-900 font-mono">
+                            👉 <strong>Mẫu câu mở đầu:</strong> "On the one hand, there are several reasons why..."
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-4 bg-indigo-50/60 rounded-2xl border border-indigo-200 space-y-1.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center">3</span>
+                          <h4 className="font-extrabold text-indigo-900 text-xs uppercase">Thân bài 2 (Body 2)</h4>
+                        </div>
+                        <p className="text-xs text-slate-700 leading-relaxed">Phân tích khía cạnh thứ hai và lập luận bảo vệ quan điểm cá nhân.</p>
+                        {user?.studentGroup === 'support' && (
+                          <div className="p-2.5 bg-white rounded-xl border border-indigo-100 text-[11px] text-indigo-900 font-mono">
+                            👉 <strong>Mẫu câu mở đầu:</strong> "On the other hand, I strongly believe that..."
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200 space-y-1.5">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center">4</span>
+                          <h4 className="font-extrabold text-emerald-900 text-xs uppercase">Kết bài (Conclusion)</h4>
+                        </div>
+                        <p className="text-xs text-slate-700 leading-relaxed">Tóm tắt các ý chính và khẳng định lại kết luận cuối cùng.</p>
+                        {user?.studentGroup === 'support' && (
+                          <div className="p-2.5 bg-white rounded-xl border border-emerald-100 text-[11px] text-emerald-900 font-mono">
+                            👉 <strong>Mẫu câu mở đầu:</strong> "In conclusion, although..., I am convinced that..."
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
