@@ -225,10 +225,10 @@ const AdminAssignments = () => {
           </div>
         )}
 
-        {/* Modal Create Assignment (Không cần cuộn - Tabbed System & No Scrollbar) */}
+        {/* Modal Create Assignment (Kích thước Lớn Rộng Rãi - Tabbed System & No Scrollbar) */}
         {showModal && (
-          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3">
-            <div className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-2xl space-y-4 border border-slate-200 no-scrollbar overflow-hidden">
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+            <div className="bg-white rounded-3xl p-8 max-w-6xl w-full h-[85vh] flex flex-col justify-between shadow-2xl space-y-6 border border-slate-200 no-scrollbar overflow-hidden">
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
@@ -282,65 +282,65 @@ const AdminAssignments = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleCreateAssignment} className="space-y-4 text-xs font-semibold">
+              <form onSubmit={handleCreateAssignment} className="flex-1 flex flex-col justify-between space-y-6 text-xs font-semibold">
                 {/* TAB 1: General Info & Prompt */}
                 {activeTab === 'general' && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="flex-1 flex flex-col justify-between space-y-5 animate-fadeIn">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="md:col-span-2">
-                        <label className="block text-slate-700 mb-1">1. Tiêu đề đề thi</label>
+                        <label className="block text-slate-700 mb-2 font-bold text-sm">1. Tiêu đề đề thi</label>
                         <input
                           type="text"
                           required
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
                           placeholder="Ví dụ: Real IELTS Writing 2 - Quy mô lớp học"
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal text-xs"
+                          className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-normal text-sm focus:ring-2 focus:ring-blue-500 transition"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-slate-700 mb-1">2. Ngày ra đề thi thật</label>
+                        <label className="block text-slate-700 mb-2 font-bold text-sm">2. Ngày ra đề thi thật</label>
                         <input
                           type="date"
                           value={examDate}
                           onChange={(e) => setExamDate(e.target.value)}
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal text-xs"
+                          className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-normal text-sm focus:ring-2 focus:ring-blue-500 transition"
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-slate-700 mb-1">3. Đề bài luận đầy đủ (Prompt)</label>
+                    <div className="flex-1 flex flex-col">
+                      <label className="block text-slate-700 mb-2 font-bold text-sm">3. Đề bài luận đầy đủ (Prompt)</label>
                       <textarea
                         required
-                        rows={3}
+                        rows={6}
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         placeholder="Nhập câu hỏi essay đầy đủ (Ví dụ: Some people think that...)..."
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-normal text-xs font-serif leading-relaxed"
+                        className="w-full flex-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-normal text-sm font-serif leading-relaxed focus:ring-2 focus:ring-blue-500 transition"
                       ></textarea>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-slate-700 mb-1">4. Chủ đề (Topic)</label>
+                        <label className="block text-slate-700 mb-2 font-bold text-sm">4. Chủ đề (Topic)</label>
                         <input
                           type="text"
                           required
                           value={topic}
                           onChange={(e) => setTopic(e.target.value)}
                           placeholder="Nhập chủ đề (Education, Environment...)"
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-slate-800"
+                          className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 transition"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-slate-700 mb-1">5. Nhóm Học Viên Đích (targetGroup)</label>
+                        <label className="block text-slate-700 mb-2 font-bold text-sm">5. Nhóm Học Viên Đích (targetGroup)</label>
                         <select
                           value={targetGroup}
                           onChange={(e) => setTargetGroup(e.target.value)}
-                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-blue-600 cursor-pointer"
+                          className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-blue-600 cursor-pointer focus:ring-2 focus:ring-blue-500 transition"
                         >
                           <option value="support">Support (Cần hỗ trợ)</option>
                           <option value="average">Average (Trung bình)</option>
@@ -353,50 +353,50 @@ const AdminAssignments = () => {
 
                 {/* TAB 2: Sample Answers for 3 Groups */}
                 {activeTab === 'samples' && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="p-3 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-3">
-                      <div className="flex items-center space-x-2 text-blue-900 font-extrabold text-xs border-b border-blue-100 pb-1.5">
-                        <Sparkles className="w-4 h-4 text-blue-600" />
-                        <span>Bài Luận Mẫu Thích Ứng Cho 3 Nhóm Học Viên</span>
+                  <div className="flex-1 flex flex-col space-y-4 animate-fadeIn">
+                    <div className="p-5 bg-blue-50/60 rounded-3xl border border-blue-100 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="flex items-center space-x-2 text-blue-900 font-extrabold text-sm border-b border-blue-100 pb-3">
+                        <Sparkles className="w-5 h-5 text-blue-600" />
+                        <span>Bài Luận Mẫu Thích Ứng Cho 3 Nhóm Học Viên (Dữ Liệu Chuẩn AI)</span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-red-700 font-bold mb-1 text-[11px]">
-                            • Bài mẫu Band 6.0 (Support)
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+                        <div className="flex flex-col">
+                          <label className="block text-red-700 font-bold mb-2 text-xs">
+                            • Bài mẫu Band 6.0 (Nhóm Cần Hỗ Trợ - Support)
                           </label>
                           <textarea
-                            rows={5}
+                            rows={10}
                             value={sampleSupport}
                             onChange={(e) => setSampleSupport(e.target.value)}
-                            placeholder="Nhập bài essay mẫu ở mức Band 6.0..."
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px] leading-relaxed"
+                            placeholder="Nhập bài essay mẫu ở mức Band 6.0 (từ vựng đơn giản, cấu trúc rõ ràng)..."
+                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs leading-relaxed"
                           ></textarea>
                         </div>
 
-                        <div>
-                          <label className="block text-amber-700 font-bold mb-1 text-[11px]">
-                            • Bài mẫu Band 7.0 (Average)
+                        <div className="flex flex-col">
+                          <label className="block text-amber-700 font-bold mb-2 text-xs">
+                            • Bài mẫu Band 7.0 (Nhóm Trung Bình - Average)
                           </label>
                           <textarea
-                            rows={5}
+                            rows={10}
                             value={sampleAverage}
                             onChange={(e) => setSampleAverage(e.target.value)}
-                            placeholder="Nhập bài essay mẫu ở mức Band 7.0..."
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px] leading-relaxed"
+                            placeholder="Nhập bài essay mẫu ở mức Band 7.0 (từ vựng tốt, collocations)..."
+                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs leading-relaxed"
                           ></textarea>
                         </div>
 
-                        <div>
-                          <label className="block text-emerald-700 font-bold mb-1 text-[11px]">
-                            • Bài mẫu Band 8.5+ (Excellent)
+                        <div className="flex flex-col">
+                          <label className="block text-emerald-700 font-bold mb-2 text-xs">
+                            • Bài mẫu Band 8.5+ (Nhóm Xuất Sắc - Excellent)
                           </label>
                           <textarea
-                            rows={5}
+                            rows={10}
                             value={sampleExcellent}
                             onChange={(e) => setSampleExcellent(e.target.value)}
                             placeholder="Nhập bài essay mẫu xuất sắc ở mức Band 8.5+..."
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px] leading-relaxed"
+                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs leading-relaxed"
                           ></textarea>
                         </div>
                       </div>
@@ -406,63 +406,63 @@ const AdminAssignments = () => {
 
                 {/* TAB 3: 4-Part Scaffolding Outline */}
                 {activeTab === 'outline' && (
-                  <div className="space-y-3 animate-fadeIn">
-                    <div className="p-3 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-3">
-                      <div className="flex items-center space-x-2 text-amber-900 font-extrabold text-xs border-b border-amber-200/60 pb-1.5">
-                        <BookOpen className="w-4 h-4 text-amber-600" />
-                        <span>Dàn Ý Scaffolding 4 Phần Cho Nhóm Yếu & Trung Bình</span>
+                  <div className="flex-1 flex flex-col space-y-4 animate-fadeIn">
+                    <div className="p-5 bg-amber-50/60 rounded-3xl border border-amber-200/80 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="flex items-center space-x-2 text-amber-900 font-extrabold text-sm border-b border-amber-200/60 pb-3">
+                        <BookOpen className="w-5 h-5 text-amber-600" />
+                        <span>Dàn Ý Scaffolding 4 Phần Cho Nhóm Yếu & Trung Bình (Dạng Card Box)</span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
+                        <div className="flex flex-col">
+                          <label className="block text-amber-900 font-bold mb-2 text-xs">
                             1. Mở bài (Introduction)
                           </label>
                           <textarea
-                            rows={2}
+                            rows={4}
                             value={outlineIntro}
                             onChange={(e) => setOutlineIntro(e.target.value)}
                             placeholder="Paraphrase đề bài và câu trả lời trực tiếp..."
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs"
                           ></textarea>
                         </div>
 
-                        <div>
-                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                        <div className="flex flex-col">
+                          <label className="block text-amber-900 font-bold mb-2 text-xs">
                             2. Thân bài 1 (Body Paragraph 1)
                           </label>
                           <textarea
-                            rows={2}
+                            rows={4}
                             value={outlineBody1}
                             onChange={(e) => setOutlineBody1(e.target.value)}
                             placeholder="Ý chính 1, giải thích nguyên nhân..."
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs"
                           ></textarea>
                         </div>
 
-                        <div>
-                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                        <div className="flex flex-col">
+                          <label className="block text-amber-900 font-bold mb-2 text-xs">
                             3. Thân bài 2 (Body Paragraph 2)
                           </label>
                           <textarea
-                            rows={2}
+                            rows={4}
                             value={outlineBody2}
                             onChange={(e) => setOutlineBody2(e.target.value)}
                             placeholder="Ý chính 2, phân tích tác động..."
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs"
                           ></textarea>
                         </div>
 
-                        <div>
-                          <label className="block text-amber-900 font-bold mb-1 text-[11px]">
+                        <div className="flex flex-col">
+                          <label className="block text-amber-900 font-bold mb-2 text-xs">
                             4. Kết bài (Conclusion)
                           </label>
                           <textarea
-                            rows={2}
+                            rows={4}
                             value={outlineConclusion}
                             onChange={(e) => setOutlineConclusion(e.target.value)}
                             placeholder="Tóm tắt quan điểm và khẳng định lập trường..."
-                            className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-normal text-[11px]"
+                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs"
                           ></textarea>
                         </div>
                       </div>
