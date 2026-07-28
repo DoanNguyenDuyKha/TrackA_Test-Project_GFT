@@ -8,6 +8,7 @@ const Dashboard = () => {
   const { user, updateUserGroup } = useAuth();
   const navigate = useNavigate();
   const [recentSubmissions, setRecentSubmissions] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEligibleForPromotion, setIsEligibleForPromotion] = useState(false);
   const [generatingTest, setGeneratingTest] = useState(false);
@@ -15,25 +16,32 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const res = await api.get('/submissions');
-        if (res.data.success) {
-          const subs = res.data.data;
+        const [subRes, analyticsRes] = await Promise.all([
+          api.get('/submissions'),
+          api.get('/submissions/progress-analytics')
+        ]);
+
+        if (subRes.data.success) {
+          const subs = subRes.data.data;
           setRecentSubmissions(subs.slice(0, 5));
 
-          // Đánh giá điều kiện đủ xét làm bài Test Nâng Hạng (3 bài gần nhất MA >= 6.0/7.0)
           if (subs.length >= 3) {
             const top3 = subs.slice(0, 3);
             const avg = top3.reduce((acc, s) => acc + s.overallBand, 0) / 3;
 
-            if (user?.studentGroup === 'support' && avg >= 6.0) {
+            if (user?.studentGroup === 'support' && avg >= 5.5) {
               setIsEligibleForPromotion(true);
-            } else if (user?.studentGroup === 'average' && avg >= 7.0) {
+            } else if (user?.studentGroup === 'average' && avg >= 6.5) {
               setIsEligibleForPromotion(true);
             }
           }
         }
+
+        if (analyticsRes.data.success) {
+          setAnalytics(analyticsRes.data.data);
+        }
       } catch (err) {
-        console.error('Error fetching submissions:', err);
+        console.error('Error fetching submissions & analytics:', err);
       } finally {
         setLoading(false);
       }
@@ -202,6 +210,99 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
+        {/* 📊 BÀI TOÁN 3 (PDF): ENGINE THEO DÕI TIẾN ĐỘ THEO THỜI GIAN & LỘ TRÌNH THÍCH ỨNG CÁ NHÂN HÓA */}
+        {analytics && analytics.hasData && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-6 animate-fadeIn">
+            <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 flex items-center">
+                  <Trophy className="w-6 h-6 mr-2 text-yellow-500" />
+                  Báo Cáo Tiến Độ Tiến Bộ Theo Thời Gian & Lộ Trình Thích Ứng (Bài Toán 3 GFT)
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Thuật toán AI tự động đo lường độ ổn định phong độ và đề xuất bước đi tiếp theo giúp bạn tiến bộ nhanh nhất.
+                </p>
+              </div>
+              <span className="px-3.5 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-100">
+                Lịch sử: {analytics.summary.totalSubmissions} bài làm
+              </span>
+            </div>
+
+            {/* Grid 3 Thẻ Chỉ Số Tiến Độ (Metrics Grid) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-2xl border border-blue-100">
+                <span className="text-xs font-bold text-slate-500 uppercase">Band Trung Bình Động (MA 5 bài)</span>
+                <div className="text-3xl font-black text-blue-700 mt-1">{analytics.summary.movingAverageBand} Band</div>
+                <span className="text-[11px] font-semibold text-slate-600 mt-1 block">
+                  Mục tiêu tiếp theo: <strong className="text-blue-800">{analytics.summary.targetBand} Band</strong>
+                </span>
+              </div>
+
+              <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-2xl border border-emerald-100">
+                <span className="text-xs font-bold text-slate-500 uppercase">Chỉ Số Độ Ổn Định Phong Độ</span>
+                <div className="text-2xl font-black text-emerald-800 mt-1">{analytics.summary.stabilityRating}</div>
+                <span className="text-[11px] font-semibold text-emerald-700 mt-1 block">
+                  Độ lệch chuẩn: {analytics.summary.standardDeviation} (Thang đo biến độ)
+                </span>
+              </div>
+
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50/50 rounded-2xl border border-purple-100">
+                <span className="text-xs font-bold text-slate-500 uppercase">Điểm Nghẽn Học Thuật Thấp Nhất</span>
+                <div className="text-2xl font-black text-purple-800 mt-1">
+                  Tiêu chí {analytics.summary.weakestCriterion} ({analytics.summary.weakestScore} Band)
+                </div>
+                <span className="text-[11px] font-semibold text-purple-700 mt-1 block">
+                  Cần ưu tiên bổ trợ trong bài tiếp theo
+                </span>
+              </div>
+            </div>
+
+            {/* Biểu đồ Chuỗi Thời Gian Tiến Bộ Điểm Số (Time-Series Band Progress Line Chart Simulation) */}
+            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200 space-y-4">
+              <h4 className="text-sm font-extrabold text-slate-800 flex items-center">
+                <Zap className="w-4 h-4 mr-1.5 text-blue-600" />
+                Biểu Đồ Xu Hướng Điểm Số Qua Các Lần Làm Bài (Time-Series Band Trend)
+              </h4>
+              <div className="h-40 flex items-end justify-between gap-2 pt-6 px-4 border-b border-slate-300 pb-2">
+                {analytics.timeSeriesData.map((item, idx) => {
+                  const heightPercent = Math.max(20, (item.overallBand / 9.0) * 100);
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center group relative">
+                      {/* Tooltip Hover */}
+                      <div className="absolute -top-8 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow opacity-0 group-hover:opacity-100 transition duration-150 pointer-events-none whitespace-nowrap z-10">
+                        {item.overallBand} Band ({item.formattedDate})
+                      </div>
+                      <div
+                        style={{ height: `${heightPercent}%` }}
+                        className="w-full max-w-[32px] bg-gradient-to-t from-blue-600 to-indigo-500 rounded-t-lg group-hover:from-blue-500 group-hover:to-indigo-400 transition shadow-sm"
+                      ></div>
+                      <span className="text-[10px] font-bold text-slate-500 mt-2">{item.formattedDate}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Lộ Trình Học Thích Ứng Được AI Đề Xuất (Dynamic Learning Roadmap) */}
+            <div className="p-6 bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-3xl space-y-4 shadow-xl">
+              <div className="flex items-center space-x-2 border-b border-indigo-700/60 pb-3">
+                <Sparkles className="w-5 h-5 text-yellow-400 animate-pulse" />
+                <h4 className="font-extrabold text-base text-yellow-300">LỘ TRÌNH HỌC TỰ ĐỘNG ĐƯỢC AI ĐỀ XUẤT CHO BẠN:</h4>
+              </div>
+              <p className="text-xs text-indigo-200 font-bold">{analytics.roadmap.nextMilestone}</p>
+
+              <div className="space-y-3 pt-1">
+                {analytics.roadmap.recommendedActions.map((action, aIdx) => (
+                  <div key={aIdx} className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 space-y-1">
+                    <h5 className="font-bold text-sm text-white">{action.title}</h5>
+                    <p className="text-xs text-indigo-200 leading-relaxed">{action.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

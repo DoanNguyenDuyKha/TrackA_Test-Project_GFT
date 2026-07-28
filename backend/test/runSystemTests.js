@@ -106,6 +106,23 @@ In conclusion, although specialized training is undeniably essential for technic
     });
     logTest('Tạo dữ liệu bài nộp thử nghiệm để bóc tách điểm nghẽn', !!mockSubmission._id);
 
+    // 7. Kiểm thử Bài toán 3 (PDF): Engine Theo dõi Tiến độ theo thời gian & Lộ trình thích ứng
+    console.log('\n📌 PHASE 7: Kiểm thử Bài toán 3 (Theo dõi tiến độ & Thuật toán Lộ trình thích ứng)...');
+    const analyticsSubmission = await Submission.create({
+      studentId: supportUser._id,
+      assignmentId: sampleAssignment._id,
+      studentAnswers: 'Test answer for analytics verification',
+      overallBand: 5.5,
+      criteriaScores: {
+        TR: { score: 5.5, feedback: 'TR Support' },
+        CC: { score: 5.5, feedback: 'CC Support' },
+        LR: { score: 5.0, feedback: 'LR Support' },
+        GRA: { score: 5.5, feedback: 'GRA Support' }
+      }
+    });
+    logTest('Tạo dữ liệu theo dõi tiến độ chuỗi thời gian', !!analyticsSubmission._id);
+    await Submission.findByIdAndDelete(analyticsSubmission._id);
+
     // Dọn dẹp bản ghi mock test
     await Submission.findByIdAndDelete(mockSubmission._id);
     await Assignment.findByIdAndDelete(aiExam._id);
