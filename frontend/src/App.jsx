@@ -17,6 +17,15 @@ import InteractiveResult from './pages/InteractiveResult';
 import LecturesList from './pages/LecturesList';
 import AdminAssignments from './pages/AdminAssignments';
 import AdminStudentsMonitor from './pages/AdminStudentsMonitor';
+import AdminDashboard from './pages/AdminDashboard';
+
+const HomeRoute = () => {
+  const { user } = useAuth();
+  if (user?.role === 'admin') {
+    return <AdminDashboard />;
+  }
+  return <StudentDashboard />;
+};
 
 function App() {
   return (
@@ -30,7 +39,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-              {/* Student Protected Routes */}
+              {/* Student & Admin Protected Routes */}
               <Route
                 path="/placement-test"
                 element={
@@ -43,7 +52,7 @@ function App() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <StudentDashboard />
+                    <HomeRoute />
                   </ProtectedRoute>
                 }
               />

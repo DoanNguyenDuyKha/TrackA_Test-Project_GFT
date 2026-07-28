@@ -144,55 +144,61 @@ const AdminAssignments = () => {
           </button>
         </div>
 
-        {/* Assignments Grid Card */}
+        {/* Assignments Table View */}
         {loading ? (
           <div className="text-center py-12 text-slate-400">Đang tải danh sách đề thi...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {assignments.map((item) => (
-              <div key={item._id} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4 hover:shadow-md transition">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="px-3 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-full">
-                      {item.topic}
-                    </span>
-                    {getTargetBadge(item.targetGroup)}
-                  </div>
-
-                  <h3 className="font-extrabold text-slate-800 text-base leading-snug">{item.title}</h3>
-                  <p className="text-xs text-slate-600 italic bg-slate-50 p-3 rounded-xl border border-slate-100 line-clamp-3">
-                    "{item.prompt}"
-                  </p>
-
-                  {item.scaffoldingTemplate && (
-                    <div className="text-[11px] text-slate-500 bg-red-50/50 p-2.5 rounded-xl border border-red-100">
-                      <span className="font-bold text-red-700 block mb-0.5">Dàn ý Scaffolding đính kèm:</span>
-                      <p className="line-clamp-2">{item.scaffoldingTemplate}</p>
-                    </div>
-                  )}
-
-                  {item.suggestedVocabulary && item.suggestedVocabulary.length > 0 && (
-                    <div className="text-[11px] text-purple-700 bg-purple-50/50 p-2.5 rounded-xl border border-purple-100">
-                      <span className="font-bold block mb-0.5">Bộ từ vựng đính kèm ({item.suggestedVocabulary.length} từ):</span>
-                      <p className="line-clamp-1">{item.suggestedVocabulary.map(v => v.word).join(', ')}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
-                  <span className="text-slate-400">
-                    Tạo lúc: {new Date(item.createdAt).toLocaleDateString('vi-VN')}
-                  </span>
-                  <button
-                    onClick={() => handleDelete(item._id)}
-                    className="p-2 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition"
-                    title="Xóa đề thi"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="p-4">Tiêu Đề & Ngày Ra Đề</th>
+                  <th className="p-4">Chủ Đề (Topic)</th>
+                  <th className="p-4">Nhóm Học Viên Đích</th>
+                  <th className="p-4">Nội Dung Đề Bài Luận</th>
+                  <th className="p-4 text-center">Cấu Hình Dàn Ý & Bài Mẫu</th>
+                  <th className="p-4 text-right">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-sm">
+                {assignments.map((item) => (
+                  <tr key={item._id} className="hover:bg-slate-50/80 transition">
+                    <td className="p-4">
+                      <div className="font-bold text-slate-800 text-sm">{item.title}</div>
+                      <span className="text-[10px] text-slate-400">Tạo: {new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-full border border-blue-100">
+                        {item.topic}
+                      </span>
+                    </td>
+                    <td className="p-4">{getTargetBadge(item.targetGroup)}</td>
+                    <td className="p-4 max-w-xs">
+                      <p className="text-xs text-slate-600 italic line-clamp-2">"{item.prompt}"</p>
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex flex-col items-center space-y-1">
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-md ${item.scaffoldingTemplate ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500'}`}>
+                          {item.scaffoldingTemplate ? '✓ Có Dàn Ý 4 Phần' : 'Chưa có dàn ý'}
+                        </span>
+                        <span className="text-[10px] font-semibold text-purple-600">
+                          {item.suggestedVocabulary?.length || 0} Từ Vựng Đính Kèm
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition border border-transparent hover:border-red-100"
+                        title="Xóa đề thi"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
