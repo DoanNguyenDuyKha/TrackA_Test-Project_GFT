@@ -83,14 +83,22 @@ const AssignmentsList = () => {
           </div>
         ) : assignments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {assignments.map((item) => {
-              const submission = submissionsMap[item._id];
-              const isCompleted = !!submission;
-              const overallScore = submission?.overallBand;
-              const expectedRange = getExpectedBandRange(user?.studentGroup);
+            {assignments
+              .filter(item => {
+                if (user?.role === 'student' && user?.studentGroup !== 'excellent') {
+                  const isAiExam = item.title?.includes('AI Master Exam') || item.title?.includes('Test Code #') || item.prompt?.includes('Test Code #');
+                  return !isAiExam;
+                }
+                return true;
+              })
+              .map((item) => {
+                const submission = submissionsMap[item._id];
+                const isCompleted = !!submission;
+                const overallScore = submission?.overallBand;
+                const expectedRange = getExpectedBandRange(user?.studentGroup);
 
-              // Kiểm tra nếu bài nộp trước đó có Band điểm thấp hơn mức năng lực hiện tại của học viên
-              const isLowerThanCurrentLevel = isCompleted && overallScore < expectedRange.min;
+                // Kiểm tra nếu bài nộp trước đó có Band điểm thấp hơn mức năng lực hiện tại của học viên
+                const isLowerThanCurrentLevel = isCompleted && overallScore < expectedRange.min;
 
               return (
                 <div
