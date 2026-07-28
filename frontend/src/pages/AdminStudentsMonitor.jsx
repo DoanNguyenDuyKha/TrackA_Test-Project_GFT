@@ -7,6 +7,10 @@ const AdminStudentsMonitor = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // AI Assistant Pedagogical Monitoring State
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [analyzingAI, setAnalyzingAI] = useState(false);
+
   // Selected student for deep inspection
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [studentSubmissions, setStudentSubmissions] = useState([]);
@@ -28,7 +32,6 @@ const AdminStudentsMonitor = () => {
         const allStudents = studentsRes.data.data;
         const subs = subRes.data.success ? subRes.data.data : [];
 
-        // Tính toán số lượng bài nộp và điểm nộp bài gần nhất cho tất cả học viên trong hệ thống
         const enrichedStudents = allStudents.map(student => {
           const studentSubs = subs.filter(s => s.studentId?._id === student._id);
           return {
@@ -47,6 +50,21 @@ const AdminStudentsMonitor = () => {
       console.error('Error fetching monitor data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRunAiAnalysis = async () => {
+    setAnalyzingAI(true);
+    try {
+      const res = await api.post('/auth/ai-monitoring-analysis');
+      if (res.data.success) {
+        setAiAnalysis(res.data.data);
+      }
+    } catch (err) {
+      console.error('Error running AI analysis:', err);
+      alert('Có lỗi xảy ra khi gọi AI phân tích.');
+    } finally {
+      setAnalyzingAI(false);
     }
   };
 
@@ -96,12 +114,61 @@ const AdminStudentsMonitor = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800">Giám Sát & Can Thiệp Sư Phạm Học Viên (Admin)</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Theo dõi chi tiết kết quả bài nộp GPT-4o, kiểm tra lịch sử học tập và can thiệp điều chỉnh (Override) nhóm năng lực học viên
-          </p>
+        <div className="flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-slate-800">Giám Sát & Can Thiệp Sư Phạm Học Viên (Admin)</h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Theo dõi chi tiết kết quả bài nộp GPT-4o, kiểm tra lịch sử học tập và can thiệp điều chỉnh (Override) nhóm năng lực học viên
+            </p>
+          </div>
+
+          <button
+            onClick={handleRunAiAnalysis}
+            disabled={analyzingAI}
+            className="px-5 py-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white rounded-2xl font-black text-xs shadow-lg hover:shadow-xl transition flex items-center space-x-2 shrink-0 animate-fadeIn"
+          >
+            <Sparkles className="w-4 h-4 text-yellow-300 animate-spin" />
+            <span>{analyzingAI ? 'AI Đang Phân Tích Toàn Bộ Lớp...' : '🔥 AI Phân Tích Học Viên Cần Can Thiệp'}</span>
+          </button>
         </div>
+
+        {/* BẢNG PHÂN TÍCH AI CỐ VẤN SƯ PHẠM (AI PEDAGOGICAL MONITORING ASSISTANT) */}
+        {aiAnalysis && (
+          <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-purple-900 text-white p-6 sm:p-8 rounded-3xl shadow-2xl space-y-5 border border-indigo-500/30 animate-fadeIn">
+            <div className="flex justify-between items-center border-b border-indigo-700/60 pb-3">
+              <h3 className="font-extrabold text-base text-yellow-300 flex items-center">
+                <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
+                BÁO CÁO CỐ VẤN SƯ PHẠM AI (GPT-4O PEDAGOGICAL ASSISTANT)
+              </h3>
+              <span className="text-xs px-3 py-1 bg-white/10 rounded-full font-mono text-indigo-200">
+                Tự động nhận diện rủi ro
+              </span>
+            </div>
+
+            <p className="text-xs text-indigo-200 leading-relaxed italic">{aiAnalysis.overallClassHealth}</p>
+
+            {/* Cảnh báo học viên nguy cơ tụt phong độ cần can thiệp gấp */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-black text-red-300 uppercase tracking-wider flex items-center">
+                🚨 Danh Sách Học Viên Cần Can Thiệp Khẩn Cấp ({aiAnalysis.criticalInterventions?.length || 0} học viên):
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {aiAnalysis.criticalInterventions?.map((item, idx) => (
+                  <div key={idx} className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-red-500/30 space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-sm text-yellow-200">{item.studentName}</span>
+                      <span className="px-2 py-0.5 bg-red-500/80 text-white text-[10px] font-black rounded-full uppercase">
+                        {item.riskLevel}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-200"><strong>Lý do:</strong> {item.reason}</p>
+                    <p className="text-xs text-indigo-200 font-semibold"><strong>Gợi ý Admin:</strong> {item.suggestedAction}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Table danh sách học viên */}
         {loading ? (

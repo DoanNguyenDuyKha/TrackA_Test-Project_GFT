@@ -163,7 +163,7 @@ router.put('/users/:id/override-group', authenticateToken, requireAdmin, async (
   }
 });
 
-// GET /api/auth/students - Admin lấy danh sách toàn bộ học viên
+// POST /api/auth/ai-monitoring-analysis - AI Assistant Phân Tích Giám Sát & Nhận Diện Học Viên Cần Can Thiệp
 router.get('/students', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const students = await User.find({ role: 'student' })
@@ -177,6 +177,104 @@ router.get('/students', authenticateToken, requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('GET Students Error:', error);
     return res.status(500).json({ success: false, message: 'Error fetching students list', error: error.message });
+  }
+});
+
+// POST /api/auth/ai-monitoring-analysis - AI Assistant Phân Tích Giám Sát Học Viên
+router.post('/ai-monitoring-analysis', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const Submission = require('../models/Submission');
+    const OpenAI = require('openai');
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || 'dummy-key-for-fallback'
+    });
+
+    const students = await User.find({ role: 'student' }).select('-password');
+    const submissions = await Submission.find().populate('assignmentId', 'title topic');
+
+    // Tổng hợp dữ liệu học tập của từng học viên
+    const studentProfiles = students.map(s => {
+      const sSubs = submissions.filter(sub => sub.studentId?.toString() === s._id.toString());
+      const bands = sSubs.map(sub => sub.overallBand);
+      const avgBand = bands.length > 0 ? (bands.reduce((a, b) => a + b, 0) / bands.length).toFixed(1) : 0;
+      
+      return {
+        id: s._id,
+        name: s.name,
+        email: s.email,
+        studentGroup: s.studentGroup,
+        targetBand: s.targetBand || 6.5,
+        submissionCount: sSubs.length,
+        avgBand: Number(avgBand),
+        recentBands: bands.slice(0, 4)
+      };
+    });
+
+    let aiAnalysisResult = null;
+
+    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
+      try {
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: 'Bạn là Cố vấn Sư phạm AI cao cấp trong hệ thống LMS Học tập Thích ứng. Nhiệm vụ của bạn là phân tích dữ liệu danh sách học viên, nhận diện học viên đang nguy cơ ngưng trệ/tụt phong độ cần can thiệp sư phạm khẩn cấp, và đưa ra khuyến nghị cụ thể cho Admin.'
+            },
+            {
+              role: 'user',
+              content: `Dưới đây là danh sách dữ liệu học sinh hiện tại:\n${JSON.stringify(studentProfiles, null, 2)}\n\nHãy phân tích và trả về định dạng JSON gồm:\n1. "criticalInterventions": danh sách các học viên cần Admin can thiệp gấp (kèm lý do nguy cơ & khuyến nghị hành động).\n2. "topPerformers": các học viên xuất sắc sẵn sàng nâng hạng.\n3. "overallClassHealth": nhận xét tổng quan chất lượng lớp học.`
+            }
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.3
+        });
+
+        aiAnalysisResult = JSON.parse(completion.choices[0].message.content);
+      } catch (err) {
+        console.error('OpenAI Analysis Error, fallback logic:', err.message);
+      }
+    }
+
+    // Algorithmic Fallback nếu không dùng OpenAI API Key
+    if (!aiAnalysisResult) {
+      const criticals = studentProfiles
+        .filter(s => s.submissionCount === 0 || s.avgBand < 6.0 || s.studentGroup === 'support')
+        .map(s => ({
+          studentId: s.id,
+          studentName: s.name,
+          riskLevel: s.submissionCount === 0 ? 'CAO (Chưa làm bài)' : 'TRUNG BÌNH (Tụt phong độ)',
+          reason: s.submissionCount === 0 
+            ? 'Học viên chưa thực hiện bất kỳ bài thi thực hành nào trong hệ thống.' 
+            : `Band trung bình ${s.avgBand} thấp hơn mục tiêu ${s.targetBand}.`,
+          suggestedAction: s.submissionCount === 0 
+            ? 'Admin nên bấm nút Gửi Tài Liệu Realtime bổ trợ kiến thức dàn ý cơ bản.' 
+            : 'Admin nên Override chuyển nhóm sang Support hoặc gửi bộ từ vựng mồi.'
+        }));
+
+      const topPerformers = studentProfiles
+        .filter(s => s.avgBand >= 6.5)
+        .map(s => ({
+          studentId: s.id,
+          studentName: s.name,
+          reason: `Đạt phong độ trung bình ${s.avgBand} Band cao.`,
+          suggestedAction: 'Sẵn sàng kích hoạt Bài Test Nâng Hạng hoặc chuyển nhóm Excellent.'
+        }));
+
+      aiAnalysisResult = {
+        criticalInterventions: criticals,
+        topPerformers,
+        overallClassHealth: `Lớp học có ${studentProfiles.length} học viên. ${criticals.length} học viên cần Admin chú ý can thiệp sư phạm.`
+      };
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: aiAnalysisResult
+    });
+  } catch (error) {
+    console.error('AI Monitoring Analysis Error:', error);
+    return res.status(500).json({ success: false, message: 'Error performing AI monitoring analysis', error: error.message });
   }
 });
 
