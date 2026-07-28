@@ -7,13 +7,18 @@ const AdminAssignments = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  // Form State
+  // Form State: 3 Ô Nhập Bài Mẫu Riêng Cho 3 Nhóm Học Viên (Support, Average, Excellent)
   const [title, setTitle] = useState('');
   const [examDate, setExamDate] = useState('');
   const [prompt, setPrompt] = useState('');
   const [topic, setTopic] = useState('Education');
   const [targetGroup, setTargetGroup] = useState('support');
   const [scaffoldingTemplate, setScaffoldingTemplate] = useState('');
+
+  // 3 Ô Nhập Bài Mẫu Riêng Biệt Cho 3 Cấp Độ Học Viên
+  const [sampleSupport, setSampleSupport] = useState('');
+  const [sampleAverage, setSampleAverage] = useState('');
+  const [sampleExcellent, setSampleExcellent] = useState('');
 
   // Dynamic suggested vocabulary cho nhóm excellent
   const [suggestedVocab, setSuggestedVocab] = useState([
@@ -56,7 +61,6 @@ const AdminAssignments = () => {
     try {
       const filteredVocab = suggestedVocab.filter(v => v.word.trim() !== '');
 
-      // Tự động ghép Ngày ra đề vào Tiêu đề đề thi nếu có chọn Ngày ra đề
       const formattedTitle = examDate 
         ? `${title} (Đề thi ngày ${examDate})`
         : title;
@@ -66,8 +70,14 @@ const AdminAssignments = () => {
         prompt,
         topic,
         targetGroup,
-        scaffoldingTemplate: targetGroup === 'support' || targetGroup === 'average' ? scaffoldingTemplate : undefined,
-        suggestedVocabulary: targetGroup === 'excellent' ? filteredVocab : undefined
+        scaffoldingTemplate,
+        sampleAnswer: sampleExcellent,
+        groupSampleAnswers: {
+          support: sampleSupport,
+          average: sampleAverage,
+          excellent: sampleExcellent
+        },
+        suggestedVocabulary: filteredVocab
       });
 
       if (res.data.success) {
@@ -77,6 +87,9 @@ const AdminAssignments = () => {
         setPrompt('');
         setTopic('Education');
         setScaffoldingTemplate('');
+        setSampleSupport('');
+        setSampleAverage('');
+        setSampleExcellent('');
         setSuggestedVocab([{ word: '', meaning: '', collocation: '' }]);
         fetchAssignments();
       }
@@ -257,21 +270,68 @@ const AdminAssignments = () => {
                   </div>
                 </div>
 
-                {/* Nhập Scaffolding Template nếu chọn targetGroup support/average */}
-                {(targetGroup === 'support' || targetGroup === 'average') && (
-                  <div className="p-4 bg-red-50/60 rounded-2xl border border-red-100 space-y-2">
-                    <label className="block text-red-800 font-bold">
-                      Dàn ý Gợi ý Scaffolding Template (Hỗ trợ nhóm {targetGroup})
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={scaffoldingTemplate}
-                      onChange={(e) => setScaffoldingTemplate(e.target.value)}
-                      placeholder="Dàn ý 4 phần chi tiết (Mở bài, Thân 1, Thân 2, Kết bài)..."
-                      className="w-full p-3 bg-white border border-red-200 rounded-xl font-normal text-xs"
-                    ></textarea>
+                {/* 3 Ô Nhập Bài Mẫu Riêng Biệt Theo Thang Điểm Dành Cho 3 Nhóm Học Viên */}
+                <div className="p-4 bg-blue-50/60 rounded-2xl border border-blue-100 space-y-4">
+                  <div className="flex items-center space-x-2 text-blue-900 font-extrabold text-sm border-b border-blue-100 pb-2">
+                    <Sparkles className="w-4 h-4 text-blue-600" />
+                    <span>Bài Luận Mẫu Thích Ứng Theo 3 Cấp Độ Học Viên (AI sẽ dùng làm dữ liệu chuẩn)</span>
                   </div>
-                )}
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-red-700 font-bold mb-1">
+                        • Bài mẫu Band 6.0 - Dành cho Nhóm Cần Hỗ Trợ (Support Group)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={sampleSupport}
+                        onChange={(e) => setSampleSupport(e.target.value)}
+                        placeholder="Nhập bài essay mẫu ở mức Band 6.0 (từ vựng đơn giản, cấu trúc rõ ràng cho học viên yếu)..."
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs leading-relaxed"
+                      ></textarea>
+                    </div>
+
+                    <div>
+                      <label className="block text-amber-700 font-bold mb-1">
+                        • Bài mẫu Band 7.0 - Dành cho Nhóm Trung Bình (Average Group)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={sampleAverage}
+                        onChange={(e) => setSampleAverage(e.target.value)}
+                        placeholder="Nhập bài essay mẫu ở mức Band 7.0 (từ vựng học thuật tốt, áp dụng collocations tự nhiên)..."
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs leading-relaxed"
+                      ></textarea>
+                    </div>
+
+                    <div>
+                      <label className="block text-emerald-700 font-bold mb-1">
+                        • Bài mẫu Band 8.5+ - Dành cho Nhóm Xuất Sắc (Excellent Group)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={sampleExcellent}
+                        onChange={(e) => setSampleExcellent(e.target.value)}
+                        placeholder="Nhập bài essay mẫu xuất sắc ở mức Band 8.5+ (từ vựng advanced, lập luận sắc bén)..."
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs leading-relaxed"
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dàn ý Scaffolding Template hỗ trợ nhóm support & average */}
+                <div className="p-4 bg-slate-100/70 rounded-2xl border border-slate-200 space-y-2">
+                  <label className="block text-slate-800 font-bold">
+                    Dàn ý Gợi ý Scaffolding Template 4 Phần (Mở bài - Thân 1 - Thân 2 - Kết bài)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={scaffoldingTemplate}
+                    onChange={(e) => setScaffoldingTemplate(e.target.value)}
+                    placeholder="Dàn ý 4 phần chi tiết để hiển thị dạng Card Box..."
+                    className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
+                  ></textarea>
+                </div>
 
                 {/* Nhập Suggested Vocabulary nếu chọn targetGroup excellent */}
                 {targetGroup === 'excellent' && (

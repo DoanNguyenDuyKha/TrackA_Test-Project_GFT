@@ -66,6 +66,20 @@ router.post('/:id/generate-adaptive-sample', authenticateToken, async (req, res)
 
     const studentGroup = req.user.studentGroup || 'support';
 
+    // Ưu tiên 1: Nếu Admin đã viết sẵn bài luận riêng cho nhóm học viên này trong groupSampleAnswers -> Trả về ngay lập tức
+    if (assignment.groupSampleAnswers && assignment.groupSampleAnswers[studentGroup] && assignment.groupSampleAnswers[studentGroup].trim() !== '') {
+      const targetBand = studentGroup === 'support' ? '6.0' : (studentGroup === 'average' ? '7.0' : '8.5+');
+      return res.json({
+        success: true,
+        data: {
+          targetBand,
+          studentGroup,
+          sampleAnswer: assignment.groupSampleAnswers[studentGroup],
+          isPrecomputed: true
+        }
+      });
+    }
+
     if (studentGroup === 'excellent') {
       return res.json({
         success: true,
@@ -151,20 +165,22 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // POST /api/assignments - Admin tạo đề thi mới
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { title, prompt, topic, targetGroup, scaffoldingTemplate, suggestedVocabulary } = req.body;
+    const { title, prompt, topic, targetGroup, scaffoldingTemplate, sampleAnswer, groupSampleAnswers, suggestedVocabulary, exercises } = req.body;
 
-    if (!title || !prompt || !topic || !targetGroup) {
-      return res.status(400).json({ success: false, message: 'Please fill in all required fields: title, prompt, topic, targetGroup' });
+    if (!title || !prompt || !topic) {
+      return res.status(400).json({ success: false, message: 'Please fill in all required fields: title, prompt, topic' });
     }
 
     const newAssignment = await Assignment.create({
       title,
       prompt,
       topic,
-      targetGroup,
+      targetGroup: targetGroup || 'support',
       scaffoldingTemplate,
+      sampleAnswer: sampleAnswer || (groupSampleAnswers ? groupSampleAnswers.excellent : ''),
+      groupSampleAnswers: groupSampleAnswers || {},
       suggestedVocabulary: suggestedVocabulary || [],
+      exercises: exercises || [],
       createdBy: req.user._id
     });
 

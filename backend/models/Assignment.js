@@ -40,7 +40,12 @@ const AssignmentSchema = new mongoose.Schema({
     type: String
   },
   sampleAnswer: {
-    type: String // Bài mẫu band 8.0+ chuẩn format DOL English
+    type: String // Bài mẫu band 8.5+ chuẩn format DOL English
+  },
+  groupSampleAnswers: {
+    support: { type: String },   // Bài mẫu dành riêng cho Nhóm Support (Band 6.0)
+    average: { type: String },   // Bài mẫu dành riêng cho Nhóm Average (Band 7.0)
+    excellent: { type: String }  // Bài mẫu dành riêng cho Nhóm Excellent (Band 8.5+)
   },
   suggestedVocabulary: [VocabularyItemSchema],
   exercises: [
