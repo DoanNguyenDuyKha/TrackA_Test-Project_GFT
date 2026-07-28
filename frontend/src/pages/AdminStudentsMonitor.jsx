@@ -70,7 +70,14 @@ const AdminStudentsMonitor = () => {
 
   useEffect(() => {
     fetchMonitorData();
+    handleRunAiAnalysis(); // Tự động AI phân tích ngay khi Admin mở trang Giám sát
   }, []);
+
+  // Kiểm tra học viên có thuộc danh sách cần can thiệp khẩn cấp không
+  const getCriticalAlert = (studentId) => {
+    if (!aiAnalysis || !aiAnalysis.criticalInterventions) return null;
+    return aiAnalysis.criticalInterventions.find(c => c.studentId?.toString() === studentId?.toString());
+  };
 
   // Thay đổi thủ công nhóm năng lực (Manual Override - Can thiệp thủ công từ Admin)
   const handleOverrideGroup = async (studentId, newGroup) => {
@@ -188,43 +195,60 @@ const AdminStudentsMonitor = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
-                {users.map((student) => (
-                  <tr key={student._id} className="hover:bg-slate-50/80 transition">
-                    <td className="p-4">
-                      <div className="font-bold text-slate-800">{student.name}</div>
-                      <span className="text-[10px] font-semibold text-slate-400">Target: {student.targetBand || 6.5} Band</span>
-                    </td>
-                    <td className="p-4 text-xs text-slate-600 font-mono">{student.email}</td>
-                    <td className="p-4">{getBadge(student.studentGroup)}</td>
-                    <td className="p-4 text-center font-bold text-slate-700">{student.submissionCount}</td>
-                    <td className="p-4 text-center">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-xs rounded-full border border-blue-100">
-                        {student.movingAvg} Band
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      {/* Manual Override Dropdown */}
-                      <select
-                        value={student.studentGroup || 'support'}
-                        onChange={(e) => handleOverrideGroup(student._id, e.target.value)}
-                        className="px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-200 transition"
-                      >
-                        <option value="support">Set: Support (&lt;6.0)</option>
-                        <option value="average">Set: Average (6.0-6.5)</option>
-                        <option value="excellent">Set: Excellent (7.0+)</option>
-                      </select>
-                    </td>
-                    <td className="p-4 text-right">
-                      <button
-                        onClick={() => handleInspectStudent(student)}
-                        className="px-3.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-extrabold text-xs rounded-xl transition inline-flex items-center space-x-1 border border-indigo-100 shadow-sm"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Xem Tiến Độ</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {users.map((student) => {
+                  const riskAlert = getCriticalAlert(student._id);
+                  return (
+                    <tr
+                      key={student._id}
+                      className={`transition ${
+                        riskAlert
+                          ? 'bg-red-50/50 hover:bg-red-50 border-l-4 border-l-red-500'
+                          : 'hover:bg-slate-50/80'
+                      }`}
+                    >
+                      <td className="p-4">
+                        <div className="font-bold text-slate-800 flex items-center space-x-2">
+                          <span>{student.name}</span>
+                          {riskAlert && (
+                            <span className="px-2 py-0.5 bg-red-600 text-white font-black text-[9px] rounded-full uppercase animate-pulse shadow-sm">
+                              🚨 CAN THIỆP GẤP
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-semibold text-slate-400">Target: {student.targetBand || 6.5} Band</span>
+                      </td>
+                      <td className="p-4 text-xs text-slate-600 font-mono">{student.email}</td>
+                      <td className="p-4">{getBadge(student.studentGroup)}</td>
+                      <td className="p-4 text-center font-bold text-slate-700">{student.submissionCount}</td>
+                      <td className="p-4 text-center">
+                        <span className="px-3 py-1 bg-blue-50 text-blue-700 font-extrabold text-xs rounded-full border border-blue-100">
+                          {student.movingAvg} Band
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        {/* Manual Override Dropdown */}
+                        <select
+                          value={student.studentGroup || 'support'}
+                          onChange={(e) => handleOverrideGroup(student._id, e.target.value)}
+                          className="px-2.5 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-200 transition"
+                        >
+                          <option value="support">Set: Support (&lt;6.0)</option>
+                          <option value="average">Set: Average (6.0-6.5)</option>
+                          <option value="excellent">Set: Excellent (7.0+)</option>
+                        </select>
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => handleInspectStudent(student)}
+                          className="px-3.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-extrabold text-xs rounded-xl transition inline-flex items-center space-x-1 border border-indigo-100 shadow-sm"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Xem Tiến Độ</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
