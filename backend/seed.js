@@ -64,10 +64,26 @@ In conclusion, although technological progress rapidly alters daily life, histor
         suggestedVocabulary: [
           { word: 'historical insights', meaning: 'Sự hiểu biết sâu sắc về lịch sử', collocation: 'indispensable historical insights' },
           { word: 'contemporary challenges', meaning: 'Các thách thức đương đại', collocation: 'understanding contemporary societal challenges' },
-          { word: 'catastrophic mistakes', meaning: 'Sai lầm thảm khốc', collocation: 'preventing catastrophic past mistakes' }
+          { word: 'catastrophic mistakes', meaning: 'Sai lầm thảm khốc', collocation: 'preventing catastrophic past mistakes' },
+          { word: 'technological advancements', meaning: 'Tiến bộ công nghệ', collocation: 'rapid technological advancements' },
+          { word: 'obsolete experiences', meaning: 'Kinh nghiệm lỗi thời', collocation: 'render past experiences obsolete' },
+          { word: 'cultural identity', meaning: 'Bản sắc văn hóa', collocation: 'fosters cultural awareness and identity' },
+          { word: 'decision-making beacon', meaning: 'Ngọn hải đăng định hướng quyết định', collocation: 'an essential beacon that guides decision-making' },
+          { word: 'societal stability', meaning: 'Sự ổn định xã hội', collocation: 'protects societal stability' },
+          { word: 'governance methods', meaning: 'Phương pháp quản trị', collocation: 'traditional governance methods' },
+          { word: 'holistic understanding', meaning: 'Sự hiểu biết toàn diện', collocation: 'achieve a holistic understanding' }
         ],
         exercises: [
-          { prompt: 'Bài tập 1: Điền từ trích từ Thân bài 2:', blankSpaceText: 'History helps prevent the repetition of _______ in international relations.', correctAnswer: 'catastrophic past mistakes', explanation: 'Trích từ bài mẫu.' }
+          { prompt: 'Câu 1: Điền từ trích từ Thân bài 2:', blankSpaceText: 'History helps prevent the repetition of _______ in international relations.', correctAnswer: 'catastrophic past mistakes', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 2: Điền từ chỉ các thách thức thời hiện đại:', blankSpaceText: 'Historical analysis helps policymakers address _______.', correctAnswer: 'contemporary challenges', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 3: Điền từ chỉ hiểu biết sâu sắc về lịch sử:', blankSpaceText: 'Studying past events provides _______ into human behavior.', correctAnswer: 'historical insights', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 4: Điền từ chỉ tiến bộ công nghệ:', blankSpaceText: 'The modern world is shaped by rapid _______.', correctAnswer: 'technological advancements', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 5: Điền từ chỉ việc làm cái gì trở nên lỗi thời:', blankSpaceText: 'Some argue that rapid change renders old methods _______.', correctAnswer: 'obsolete experiences', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 6: Điền từ chỉ bản sắc văn hóa:', blankSpaceText: 'History education strengthens national and _______.', correctAnswer: 'cultural identity', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 7: Điền từ chỉ ngọn hải đăng định hướng:', blankSpaceText: 'Historical knowledge serves as an essential _______ for society.', correctAnswer: 'decision-making beacon', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 8: Điền từ chỉ sự ổn định của xã hội:', blankSpaceText: 'Understanding past crises helps protect _______.', correctAnswer: 'societal stability', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 9: Điền từ chỉ phương pháp quản lý nhà nước:', blankSpaceText: 'Modern financial systems require innovative _______.', correctAnswer: 'governance methods', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 10: Điền từ chỉ sự hiểu biết toàn diện:', blankSpaceText: 'Analyzing past and present events provides a _______.', correctAnswer: 'holistic understanding', explanation: 'Trích từ bài mẫu.' }
         ],
         createdBy: adminUser._id
       },
@@ -94,10 +110,26 @@ In conclusion, while safeguarding patient data privacy is imperative, the revolu
         suggestedVocabulary: [
           { word: 'diagnostic precision', meaning: 'Độ chính xác trong chẩn đoán', collocation: 'benefits in diagnostic precision' },
           { word: 'unparalleled accuracy', meaning: 'Độ chính xác vô song', collocation: 'achieving unparalleled accuracy' },
-          { word: 'patient data security', meaning: 'Bảo mật dữ liệu bệnh nhân', collocation: 'raising concerns about patient data security' }
+          { word: 'patient data security', meaning: 'Bảo mật dữ liệu bệnh nhân', collocation: 'raising concerns about patient data security' },
+          { word: 'revolutionary breakthrough', meaning: 'Bước đột phá mang tính cách mạng', collocation: 'marks a revolutionary breakthrough' },
+          { word: 'therapeutic efficiency', meaning: 'Hiệu quả điều trị', collocation: 'enhance therapeutic efficiency' },
+          { word: 'automated algorithms', meaning: 'Thuật toán tự động', collocation: 'relying on automated algorithms' },
+          { word: 'genomic data', meaning: 'Dữ liệu bộ gen', collocation: 'analyze complex genomic data' },
+          { word: 'delicate procedures', meaning: 'Các ca phẫu thuật tinh vi', collocation: 'perform delicate procedures' },
+          { word: 'surgical complications', meaning: 'Biến chứng phẫu thuật', collocation: 'reducing surgical complications' },
+          { word: 'human empathy', meaning: 'Sự đồng cảm của con người', collocation: 'lack genuine human empathy' }
         ],
         exercises: [
-          { prompt: 'Bài tập 1: Điền cụm từ trích từ Thân bài 2:', blankSpaceText: 'AI technology enhances medical outcomes by achieving _______.', correctAnswer: 'unparalleled accuracy', explanation: 'Trích từ bài mẫu.' }
+          { prompt: 'Câu 1: Điền cụm từ trích từ Thân bài 2:', blankSpaceText: 'AI technology enhances medical outcomes by achieving _______.', correctAnswer: 'unparalleled accuracy', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 2: Điền từ chỉ độ chính xác chẩn đoán:', blankSpaceText: 'Machine learning improves _______ in medical imaging.', correctAnswer: 'diagnostic precision', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 3: Điền từ chỉ bảo mật thông tin bệnh nhân:', blankSpaceText: 'Healthcare systems must prioritize _______.', correctAnswer: 'patient data security', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 4: Điền từ chỉ bước đột phá cách mạng:', blankSpaceText: 'AI in medicine is considered a _______.', correctAnswer: 'revolutionary breakthrough', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 5: Điền từ chỉ hiệu quả điều trị:', blankSpaceText: 'Advanced tools boost surgical speed and _______.', correctAnswer: 'therapeutic efficiency', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 6: Điền từ chỉ thuật toán tự động:', blankSpaceText: 'Diagnoses are increasingly processed by _______.', correctAnswer: 'automated algorithms', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 7: Điền từ chỉ dữ liệu gen:', blankSpaceText: 'Supercomputers analyze vast amounts of _______.', correctAnswer: 'genomic data', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 8: Điền từ chỉ phẫu thuật tinh vi:', blankSpaceText: 'Robots assist doctors in executing _______.', correctAnswer: 'delicate procedures', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 9: Điền từ chỉ biến chứng phẫu thuật:', blankSpaceText: 'Precision technology minimizes the risk of _______.', correctAnswer: 'surgical complications', explanation: 'Trích từ bài mẫu.' },
+          { prompt: 'Câu 10: Điền từ chỉ sự đồng cảm giữa người với người:', blankSpaceText: 'Machines cannot replace doctor-patient _______.', correctAnswer: 'human empathy', explanation: 'Trích từ bài mẫu.' }
         ],
         createdBy: adminUser._id
       },
