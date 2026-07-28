@@ -134,6 +134,64 @@ router.put('/update-group', authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/auth/users/:id - Admin cập nhật thông tin học viên (Tên, Email, Nhóm, Target Band)
+router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { name, email, studentGroup, targetBand } = req.body;
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (email) updateFields.email = email;
+    if (studentGroup && ['support', 'average', 'excellent'].includes(studentGroup)) {
+      updateFields.studentGroup = studentGroup;
+    }
+    if (targetBand) updateFields.targetBand = targetBand;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Student profile updated successfully',
+      data: updatedUser
+    });
+  } catch (error) {
+    console.error('Update Student Error:', error);
+    return res.status(500).json({ success: false, message: 'Error updating student profile', error: error.message });
+  }
+});
+
+// DELETE /api/auth/users/:id - Admin xóa hoàn toàn học viên và tất cả bài nộp (Cascading delete)
+router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const Submission = require('../models/Submission');
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Xóa sạch tất cả bài nộp (Submissions) của học viên này
+    await Submission.deleteMany({ studentId: req.params.id });
+
+    // Xóa học viên khỏi MongoDB User collection
+    await User.findByIdAndDelete(req.params.id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Student and all associated submissions permanently deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete Student Error:', error);
+    return res.status(500).json({ success: false, message: 'Error deleting student', error: error.message });
+  }
+});
+
 // PUT /api/auth/users/:id/override-group - Admin can thiệp điều chỉnh thủ công nhóm học viên (Bài Toán 3 PDF)
 router.put('/users/:id/override-group', authenticateToken, requireAdmin, async (req, res) => {
   try {
@@ -162,6 +220,7 @@ router.put('/users/:id/override-group', authenticateToken, requireAdmin, async (
     return res.status(500).json({ success: false, message: 'Error performing manual override', error: error.message });
   }
 });
+
 
 // POST /api/auth/ai-monitoring-analysis - AI Assistant Phân Tích Giám Sát & Nhận Diện Học Viên Cần Can Thiệp
 router.get('/students', authenticateToken, requireAdmin, async (req, res) => {

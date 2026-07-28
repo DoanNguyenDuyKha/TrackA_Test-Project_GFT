@@ -7,6 +7,8 @@ const AdminAssignments = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('general'); // Tab Modal System: 'general' | 'samples' | 'outline'
+  const [editMode, setEditMode] = useState(false);
+  const [editingAssignmentId, setEditingAssignmentId] = useState(null);
 
   // Form State: 3 Ô Nhập Bài Mẫu Riêng Cho 3 Nhóm Học Viên (Support, Average, Excellent)
   const [title, setTitle] = useState('');
@@ -29,6 +31,62 @@ const AdminAssignments = () => {
   const [suggestedVocab, setSuggestedVocab] = useState([
     { word: '', meaning: '', collocation: '' }
   ]);
+
+  const openCreateModal = () => {
+    setEditMode(false);
+    setEditingAssignmentId(null);
+    setTitle('');
+    setExamDate('');
+    setPrompt('');
+    setTopic('Education');
+    setTargetGroup('support');
+    setOutlineIntro('');
+    setOutlineBody1('');
+    setOutlineBody2('');
+    setOutlineConclusion('');
+    setSampleSupport('');
+    setSampleAverage('');
+    setSampleExcellent('');
+    setSuggestedVocab([{ word: '', meaning: '', collocation: '' }]);
+    setActiveTab('general');
+    setShowModal(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditMode(true);
+    setEditingAssignmentId(item._id);
+    setTitle(item.title ? item.title.replace(/\s*\(Đề thi ngày [^)]+\)/, '') : '');
+    const matchDate = item.title ? item.title.match(/\(Đề thi ngày ([^)]+)\)/) : null;
+    setExamDate(matchDate ? matchDate[1] : '');
+    setPrompt(item.prompt || '');
+    setTopic(item.topic || 'Education');
+    setTargetGroup(item.targetGroup || 'support');
+
+    if (item.scaffoldingTemplate) {
+      const introMatch = item.scaffoldingTemplate.match(/1\.\s*\*\*Mở bài[^*]*\*\*\n(?:-\s*)?([\s\S]*?)(?=\n\n2\.|\n2\.|$)/);
+      const body1Match = item.scaffoldingTemplate.match(/2\.\s*\*\*Thân bài 1[^*]*\*\*\n(?:-\s*)?([\s\S]*?)(?=\n\n3\.|\n3\.|$)/);
+      const body2Match = item.scaffoldingTemplate.match(/3\.\s*\*\*Thân bài 2[^*]*\*\*\n(?:-\s*)?([\s\S]*?)(?=\n\n4\.|\n4\.|$)/);
+      const concMatch = item.scaffoldingTemplate.match(/4\.\s*\*\*Kết bài[^*]*\*\*\n(?:-\s*)?([\s\S]*?)(?=$)/);
+
+      setOutlineIntro(introMatch ? introMatch[1].replace(/^- /gm, '').trim() : '');
+      setOutlineBody1(body1Match ? body1Match[1].replace(/^- /gm, '').trim() : '');
+      setOutlineBody2(body2Match ? body2Match[1].replace(/^- /gm, '').trim() : '');
+      setOutlineConclusion(concMatch ? concMatch[1].replace(/^- /gm, '').trim() : '');
+    } else {
+      setOutlineIntro('');
+      setOutlineBody1('');
+      setOutlineBody2('');
+      setOutlineConclusion('');
+    }
+
+    setSampleSupport(item.groupSampleAnswers?.support || '');
+    setSampleAverage(item.groupSampleAnswers?.average || '');
+    setSampleExcellent(item.groupSampleAnswers?.excellent || item.sampleAnswer || '');
+    setSuggestedVocab(item.suggestedVocabulary?.length > 0 ? item.suggestedVocabulary : [{ word: '', meaning: '', collocation: '' }]);
+    setActiveTab('general');
+    setShowModal(true);
+  };
+
 
   const fetchAssignments = async () => {
     try {
@@ -61,7 +119,7 @@ const AdminAssignments = () => {
     setSuggestedVocab(updated);
   };
 
-  const handleCreateAssignment = async (e) => {
+  const handleSaveAssignment = async (e) => {
     e.preventDefault();
     try {
       const filteredVocab = suggestedVocab.filter(v => v.word.trim() !== '');
@@ -85,7 +143,7 @@ const AdminAssignments = () => {
 - ${outlineConclusion.split('\n').join('\n- ')}
       `.trim();
 
-      const res = await api.post('/assignments', {
+      const payload = {
         title: formattedTitle,
         prompt,
         topic,
@@ -98,33 +156,28 @@ const AdminAssignments = () => {
           excellent: sampleExcellent
         },
         suggestedVocabulary: filteredVocab
-      });
+      };
+
+      let res;
+      if (editMode && editingAssignmentId) {
+        res = await api.put(`/assignments/${editingAssignmentId}`, payload);
+      } else {
+        res = await api.post('/assignments', payload);
+      }
 
       if (res.data.success) {
         setShowModal(false);
-        setTitle('');
-        setExamDate('');
-        setPrompt('');
-        setTopic('Education');
-        setOutlineIntro('');
-        setOutlineBody1('');
-        setOutlineBody2('');
-        setOutlineConclusion('');
-        setSampleSupport('');
-        setSampleAverage('');
-        setSampleExcellent('');
-        setSuggestedVocab([{ word: '', meaning: '', collocation: '' }]);
         fetchAssignments();
       }
     } catch (err) {
-      console.error('Error creating assignment:', err.response?.data || err.message);
+      console.error('Error saving assignment:', err.response?.data || err.message);
       const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
-      alert(`Có lỗi xảy ra khi tạo đề thi mới: ${errMsg}`);
+      alert(`Có lỗi xảy ra khi lưu đề thi: ${errMsg}`);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa đề thi này?')) return;
+    if (!window.confirm('Bạn có chắc chắn muốn xóa hoàn toàn đề thi này?')) return;
     try {
       const res = await api.delete(`/assignments/${id}`);
       if (res.data.success) {
@@ -155,11 +208,11 @@ const AdminAssignments = () => {
           <div>
             <h1 className="text-2xl font-black text-slate-800">Quản Lý Đề Thi IELTS Task 2 (Admin)</h1>
             <p className="text-xs text-slate-500 mt-1">
-              Thêm mới, cấu hình Dàn ý Scaffolding & Từ vựng nâng cao cho từng nhóm học viên
+              Thêm mới, chỉnh sửa, cấu hình Dàn ý Scaffolding & Từ vựng nâng cao cho từng nhóm học viên
             </p>
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openCreateModal}
             className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl shadow-md transition"
           >
             <Plus className="w-4 h-4" />
@@ -210,13 +263,22 @@ const AdminAssignments = () => {
                       </div>
                     </td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition border border-transparent hover:border-red-100"
-                        title="Xóa đề thi"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end space-x-1">
+                        <button
+                          onClick={() => openEditModal(item)}
+                          className="p-2 text-slate-500 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition border border-transparent hover:border-indigo-100"
+                          title="Sửa đề thi"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item._id)}
+                          className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition border border-transparent hover:border-red-100"
+                          title="Xóa đề thi"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -224,6 +286,7 @@ const AdminAssignments = () => {
             </table>
           </div>
         )}
+
 
         {/* Modal Create Assignment (Kích thước Lớn Rộng Rãi - Tabbed System & No Scrollbar) */}
         {showModal && (
@@ -235,7 +298,9 @@ const AdminAssignments = () => {
                     <Plus className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base font-extrabold text-slate-800">Tạo Đề Thi IELTS Task 2 Thích Ứng Mới</h3>
+                    <h3 className="text-base font-extrabold text-slate-800">
+                      {editMode ? 'Chỉnh Sửa Đề Thi IELTS Task 2' : 'Tạo Đề Thi IELTS Task 2 Thích Ứng Mới'}
+                    </h3>
                     <p className="text-[11px] text-slate-400">Cấu hình thông tin đề thi, bài luận mẫu và dàn ý 4 phần</p>
                   </div>
                 </div>
@@ -282,7 +347,8 @@ const AdminAssignments = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleCreateAssignment} className="flex-1 flex flex-col justify-between space-y-6 text-xs font-semibold">
+              <form onSubmit={handleSaveAssignment} className="flex-1 flex flex-col justify-between space-y-6 text-xs font-semibold">
+
                 {/* TAB 1: General Info & Prompt */}
                 {activeTab === 'general' && (
                   <div className="flex-1 flex flex-col justify-between space-y-5 animate-fadeIn">
