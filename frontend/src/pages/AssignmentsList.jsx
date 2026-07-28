@@ -11,11 +11,15 @@ const AssignmentsList = () => {
   const [submissionsMap, setSubmissionsMap] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // Mode phân loại: 'adaptive' (Thích ứng tự động) hoặc 'all' (Tất cả đề thi hiện có)
+  const [filterMode, setFilterMode] = useState('adaptive');
+
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const [assignRes, subRes] = await Promise.all([
-          api.get('/assignments'),
+          api.get(`/assignments?showAll=${filterMode === 'all'}`),
           api.get('/submissions')
         ]);
 
@@ -23,16 +27,12 @@ const AssignmentsList = () => {
           setAssignments(assignRes.data.data);
         }
 
-        // Tạo Map quản lý bài nộp mới nhất cho từng đề thi
         if (subRes.data.success) {
           const subMap = {};
           subRes.data.data.forEach(sub => {
             const assignId = sub.assignmentId?._id || sub.assignmentId;
-            if (assignId) {
-              // Lưu lại bản nộp mới nhất (do danh sách submissions đã sort theo submittedAt giảm dần)
-              if (!subMap[assignId]) {
-                subMap[assignId] = sub;
-              }
+            if (assignId && !subMap[assignId]) {
+              subMap[assignId] = sub;
             }
           });
           setSubmissionsMap(subMap);
@@ -45,7 +45,7 @@ const AssignmentsList = () => {
     };
 
     fetchData();
-  }, []);
+  }, [filterMode]);
 
   // Hàm chuyển đổi studentGroup sang thang Band tham chiếu
   const getExpectedBandRange = (group) => {
@@ -71,9 +71,17 @@ const AssignmentsList = () => {
               Danh sách đề thi được tự động đề xuất dựa theo nhóm năng lực <span className="font-bold uppercase text-blue-600">{user?.studentGroup}</span> của bạn.
             </p>
           </div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-600 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm">
-            <Filter className="w-4 h-4 text-blue-600" />
-            <span>Phần phân loại: Thích ứng tự động</span>
+          <div className="flex items-center space-x-2 bg-white px-3.5 py-2 rounded-2xl border border-slate-200 shadow-sm">
+            <Filter className="w-4 h-4 text-blue-600 shrink-0" />
+            <span className="text-xs font-bold text-slate-700">Chế độ phân loại:</span>
+            <select
+              value={filterMode}
+              onChange={(e) => setFilterMode(e.target.value)}
+              className="text-xs font-black text-blue-600 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            >
+              <option value="adaptive">🎯 Thích Ứng Tự Động ({user?.studentGroup?.toUpperCase()})</option>
+              <option value="all">🌐 Tất Cả Đề Thi Hiện Có ({assignments.length} Đề)</option>
+            </select>
           </div>
         </div>
 
@@ -86,17 +94,15 @@ const AssignmentsList = () => {
             {assignments
               .filter(item => {
                 if (user?.role === 'student') {
-                  // Phân loại tự động đề thi thích ứng theo nhóm năng lực của học viên (support, average, excellent)
-                  const studentGroup = user?.studentGroup || 'support';
-
-                  // Loại bỏ bài AI Master Exam đối với nhóm support & average
                   const isAiExam = item.title?.includes('AI Master Exam') || item.title?.includes('Test Code #') || item.prompt?.includes('Test Code #');
-                  if (studentGroup !== 'excellent' && isAiExam) {
+                  
+                  // Không hiển thị đề AI của người khác
+                  if (isAiExam && user?.studentGroup !== 'excellent') {
                     return false;
                   }
 
-                  // Lọc đề thi bám sát targetGroup phù hợp năng lực học viên
-                  if (item.targetGroup && item.targetGroup !== studentGroup) {
+                  // Chế độ "Thích ứng tự động" -> Lọc theo targetGroup
+                  if (filterMode === 'adaptive' && item.targetGroup && item.targetGroup !== user?.studentGroup) {
                     return false;
                   }
                 }

@@ -23,27 +23,26 @@ router.get('/', authenticateToken, async (req, res) => {
       .sort({ createdAt: -1 });
 
     // Phân loại tự động đề thi thích ứng (Adaptive Filtering):
-    // - Chỉ trả về các đề thi có targetGroup trùng khớp với nhóm năng lực của học viên (support, average, excellent)
-    // - Đối với nhóm Excellent: thêm điều kiện bảo mật chỉ lấy đề AI do chính học viên đó tạo
+    // - Mặc định chỉ lấy đề bám sát targetGroup của học viên
+    // - Nếu học viên chọn chế độ "Tất cả đề thi" (showAll=true), cho phép xem tất cả các đề thật (nhưng vẫn bảo vệ ẩn các đề AI của người khác)
     if (req.user.role === 'student') {
       const studentGroup = req.user.studentGroup || 'support';
+      const isShowAll = req.query.showAll === 'true';
 
-      if (studentGroup === 'excellent') {
-        assignments = assignments.filter(item => {
-          const isAiExam = item.title.includes('AI Master Exam') || item.title.includes('Test Code #') || item.prompt.includes('Test Code #');
-          if (isAiExam) {
-            return item.createdBy && item.createdBy._id && item.createdBy._id.toString() === req.user._id.toString();
-          }
-          return item.targetGroup === 'excellent';
-        });
-      } else {
-        // Học viên Support và Average chỉ xem các đề có targetGroup trùng khớp với nhóm của họ và không phải đề AI Master Exam
-        assignments = assignments.filter(item => {
-          const isAiExam = item.title.includes('AI Master Exam') || item.title.includes('Test Code #') || item.prompt.includes('Test Route #') || item.prompt.includes('Test Code #');
-          if (isAiExam) return false;
-          return item.targetGroup === studentGroup;
-        });
-      }
+      assignments = assignments.filter(item => {
+        const isAiExam = item.title.includes('AI Master Exam') || item.title.includes('Test Code #') || item.prompt.includes('Test Route #') || item.prompt.includes('Test Code #');
+        
+        if (isAiExam) {
+          // Chỉ cho phép chính học viên đã khởi tạo đề AI đó xem bài AI của mình
+          return item.createdBy && item.createdBy._id && item.createdBy._id.toString() === req.user._id.toString();
+        }
+
+        if (isShowAll) {
+          return true; // Hiển thị tất cả đề thi thật chính thức
+        }
+
+        return item.targetGroup === studentGroup; // Lọc thích ứng theo phân cấp
+      });
     }
 
     return res.status(200).json({
