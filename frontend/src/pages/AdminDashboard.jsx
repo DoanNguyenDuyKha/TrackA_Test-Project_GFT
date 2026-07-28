@@ -176,13 +176,19 @@ const AdminDashboard = () => {
                 atRiskStudents.map((st, idx) => (
                   <div key={idx} className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-red-500/30 space-y-1">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-sm text-yellow-200">{st.studentName}</span>
-                      <span className="px-2.5 py-0.5 bg-red-600 text-white text-[10px] font-black rounded-full uppercase">
-                        {st.riskLevel}
+                      <span className="font-bold text-sm text-yellow-200">
+                        👤 {st.studentName || st.name || 'Học viên cần hỗ trợ'}
                       </span>
+                      {st.riskLevel && (
+                        <span className="px-2.5 py-0.5 bg-red-600 text-white text-[10px] font-black rounded-full uppercase">
+                          {st.riskLevel}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-300"><strong>Lý do:</strong> {st.reason}</p>
-                    <p className="text-xs text-indigo-200 font-bold"><strong>Khuyến nghị:</strong> {st.suggestedAction}</p>
+                    {st.suggestedAction && (
+                      <p className="text-xs text-indigo-200 font-bold"><strong>Khuyến nghị:</strong> {st.suggestedAction}</p>
+                    )}
                   </div>
                 ))
               ) : (

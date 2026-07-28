@@ -223,7 +223,7 @@ router.post('/ai-monitoring-analysis', authenticateToken, requireAdmin, async (r
             },
             {
               role: 'user',
-              content: `Dưới đây là danh sách dữ liệu học sinh hiện tại:\n${JSON.stringify(studentProfiles, null, 2)}\n\nHãy phân tích và trả về định dạng JSON gồm:\n1. "criticalInterventions": danh sách các học viên cần Admin can thiệp gấp (kèm lý do nguy cơ & khuyến nghị hành động).\n2. "topPerformers": các học viên xuất sắc sẵn sàng nâng hạng.\n3. "overallClassHealth": nhận xét tổng quan chất lượng lớp học.`
+              content: `Dưới đây là danh sách dữ liệu học sinh hiện tại:\n${JSON.stringify(studentProfiles, null, 2)}\n\nHãy phân tích và trả về định dạng JSON gồm:\n1. "criticalInterventions": danh sách các học viên cần Admin can thiệp gấp (bắt buộc gồm các trường: "studentId", "studentName", "riskLevel", "reason", "suggestedAction").\n2. "topPerformers": các học viên xuất sắc sẵn sàng nâng hạng (gồm: "studentId", "studentName", "reason", "suggestedAction").\n3. "overallClassHealth": nhận xét tổng quan chất lượng lớp học.`
             }
           ],
           response_format: { type: "json_object" },
