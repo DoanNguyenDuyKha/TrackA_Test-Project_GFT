@@ -125,26 +125,13 @@ const Task2ArticleDetail = () => {
           const assignData = res.data.data;
           setAssignment(assignData);
 
-          // Nếu học viên 'excellent' -> dùng bài mẫu Band 8.5+ từ DB
-          if (user?.studentGroup === 'excellent') {
-            setAdaptiveSample(assignData.sampleAnswer);
-            setAdaptiveBand('8.5+');
-          } else {
-            // Render bài mẫu thích ứng vừa sức bằng AI GPT-4o (Band 6.0 hoặc 7.0)
-            setLoadingSample(true);
-            try {
-              const sampleRes = await api.post(`/assignments/${id}/generate-adaptive-sample`);
-              if (sampleRes.data.success) {
-                setAdaptiveSample(sampleRes.data.data.sampleAnswer);
-                setAdaptiveBand(sampleRes.data.data.targetBand);
-              }
-            } catch (err) {
-              setAdaptiveSample(assignData.sampleAnswer);
-              setAdaptiveBand(user?.studentGroup === 'support' ? '6.0' : '7.0');
-            } finally {
-              setLoadingSample(false);
-            }
-          }
+          // Đảm bảo hiển thị 100% chính xác bài luận mẫu do Admin đã nhập
+          const group = user?.studentGroup || 'support';
+          const groupSample = assignData.groupSampleAnswers?.[group] || assignData.sampleAnswer;
+          const bandLabel = group === 'support' ? '6.0' : (group === 'average' ? '7.0' : '8.5+');
+
+          setAdaptiveSample(groupSample);
+          setAdaptiveBand(bandLabel);
         }
       } catch (err) {
         console.error('Error fetching assignment details:', err);

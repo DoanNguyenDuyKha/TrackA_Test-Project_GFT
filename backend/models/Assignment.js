@@ -27,8 +27,8 @@ const AssignmentSchema = new mongoose.Schema({
   },
   topic: {
     type: String,
-    enum: ['Education', 'Health', 'Art', 'Technology', 'Sport', 'Social Issues', 'Environment'],
-    required: [true, 'Topic is required']
+    required: [true, 'Topic is required'],
+    trim: true
   },
   targetGroup: {
     type: String,

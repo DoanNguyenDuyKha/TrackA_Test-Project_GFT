@@ -94,8 +94,9 @@ const AdminAssignments = () => {
         fetchAssignments();
       }
     } catch (err) {
-      console.error('Error creating assignment:', err);
-      alert('Có lỗi xảy ra khi tạo đề thi mới');
+      console.error('Error creating assignment:', err.response?.data || err.message);
+      const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+      alert(`Có lỗi xảy ra khi tạo đề thi mới: ${errMsg}`);
     }
   };
 

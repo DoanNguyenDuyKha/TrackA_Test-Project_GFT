@@ -139,9 +139,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const studentObj = assignment.toObject();
     const studentGroup = req.user?.studentGroup || 'support';
 
-    // Đảm bảo sampleAnswer trả về ĐÚNG 100% đoạn văn Admin đã viết ở ô tương ứng với nhóm học viên
+    // ĐỐI VỚI HỌC VIÊN: Luôn trả về 100% chính xác đoạn văn mà Admin đã nhập trong ô tương ứng với nhóm đó
     if (studentObj.groupSampleAnswers && studentObj.groupSampleAnswers[studentGroup] && studentObj.groupSampleAnswers[studentGroup].trim() !== '') {
       studentObj.sampleAnswer = studentObj.groupSampleAnswers[studentGroup];
+    } else if (!studentObj.sampleAnswer) {
+      studentObj.sampleAnswer = 'Chưa có bài mẫu cho nhóm học viên này.';
     }
 
     return res.status(200).json({
@@ -156,10 +158,23 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // POST /api/assignments - Admin tạo đề thi mới
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
+  try {
     const { title, prompt, topic, targetGroup, scaffoldingTemplate, sampleAnswer, groupSampleAnswers, suggestedVocabulary, exercises } = req.body;
 
     if (!title || !prompt || !topic) {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields: title, prompt, topic' });
+    }
+
+    // Chọn đúng đoạn văn Admin đã viết ở 3 ô tương ứng theo targetGroup để lưu làm sampleAnswer mặc định
+    let primarySampleAnswer = sampleAnswer;
+    if (groupSampleAnswers) {
+      if (targetGroup === 'support' && groupSampleAnswers.support) {
+        primarySampleAnswer = groupSampleAnswers.support;
+      } else if (targetGroup === 'average' && groupSampleAnswers.average) {
+        primarySampleAnswer = groupSampleAnswers.average;
+      } else if (groupSampleAnswers.excellent) {
+        primarySampleAnswer = groupSampleAnswers.excellent;
+      }
     }
 
     const newAssignment = await Assignment.create({
@@ -168,7 +183,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       topic,
       targetGroup: targetGroup || 'support',
       scaffoldingTemplate,
-      sampleAnswer: sampleAnswer || (groupSampleAnswers ? groupSampleAnswers.excellent : ''),
+      sampleAnswer: primarySampleAnswer || '',
       groupSampleAnswers: groupSampleAnswers || {},
       suggestedVocabulary: suggestedVocabulary || [],
       exercises: exercises || [],

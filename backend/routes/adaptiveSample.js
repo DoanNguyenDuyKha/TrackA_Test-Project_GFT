@@ -18,60 +18,20 @@ router.post('/:id/generate-adaptive-sample', authenticateToken, async (req, res)
 
     const studentGroup = req.user.studentGroup || 'support';
 
-    // Đã là học viên 'excellent' thì trả về bài mẫu Band 8.5+ trong DB mà không cần render lại AI
-    if (studentGroup === 'excellent') {
-      return res.json({
-        success: true,
-        data: {
-          targetBand: '8.5+',
-          studentGroup,
-          sampleAnswer: assignment.sampleAnswer,
-          isPrecomputed: true
-        }
-      });
-    }
+    // Đảm bảo trả về 100% chính xác bài luận mẫu do Admin đã nhập
+    const groupSample = (assignment.groupSampleAnswers && assignment.groupSampleAnswers[studentGroup]) 
+      ? assignment.groupSampleAnswers[studentGroup] 
+      : assignment.sampleAnswer;
 
-    // Học viên nhóm 'support' (Target Band 5.5 - 6.0) hoặc 'average' (Target Band 6.5 - 7.0) -> AI Render bài luận thích ứng vừa sức
-    const targetBand = studentGroup === 'support' ? '6.0' : '7.0';
-    const complexityGuide = studentGroup === 'support' 
-      ? 'Viết bài luận ở mức Band 6.0 với từ vựng dễ hiểu, câu đơn và câu ghép cơ bản, cấu trúc mạch lạc rõ ràng, không lạm dụng từ quá khó.'
-      : 'Viết bài luận ở mức Band 7.0 với các từ vựng học thuật tốt, áp dụng một số câu phức và collocations tự nhiên.';
-
-    let generatedSample = '';
-
-    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
-      try {
-        const aiRes = await openai.chat.completions.create({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: `Bạn là một chuyên gia luyện thi IELTS Writing Task 2. Nhiệm vụ của bạn là viết một bài mẫu IELTS Writing Task 2 chuẩn chính xác ở Band ${targetBand}. ${complexityGuide}`
-            },
-            {
-              role: 'user',
-              content: `[ĐỀ BÀI TASK 2] ${assignment.prompt}\n\nHãy viết bài mẫu đạt Band ${targetBand} khoảng 260-280 từ. Trả về duy nhất nội dung bài luận Tiếng Anh.`
-            }
-          ],
-          temperature: 0.5
-        });
-
-        generatedSample = aiRes.choices[0].message.content.trim();
-      } catch (err) {
-        console.error('Error generating AI adaptive sample:', err.message);
-        generatedSample = `[Fallback Band ${targetBand} Sample]\n${assignment.sampleAnswer}`;
-      }
-    } else {
-      generatedSample = `[Fallback Band ${targetBand} Sample]\n${assignment.sampleAnswer}`;
-    }
+    const targetBand = studentGroup === 'support' ? '6.0' : (studentGroup === 'average' ? '7.0' : '8.5+');
 
     return res.json({
       success: true,
       data: {
         targetBand,
         studentGroup,
-        sampleAnswer: generatedSample,
-        isPrecomputed: false
+        sampleAnswer: groupSample || 'Chưa có bài mẫu cho nhóm học viên này.',
+        isPrecomputed: true
       }
     });
   } catch (error) {
