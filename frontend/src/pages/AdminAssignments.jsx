@@ -13,7 +13,11 @@ const AdminAssignments = () => {
   const [prompt, setPrompt] = useState('');
   const [topic, setTopic] = useState('Education');
   const [targetGroup, setTargetGroup] = useState('support');
-  const [scaffoldingTemplate, setScaffoldingTemplate] = useState('');
+  // Dàn ý 4 phần riêng biệt (Mở bài, Thân bài 1, Thân bài 2, Kết bài)
+  const [outlineIntro, setOutlineIntro] = useState('');
+  const [outlineBody1, setOutlineBody1] = useState('');
+  const [outlineBody2, setOutlineBody2] = useState('');
+  const [outlineConclusion, setOutlineConclusion] = useState('');
 
   // 3 Ô Nhập Bài Mẫu Riêng Biệt Cho 3 Cấp Độ Học Viên
   const [sampleSupport, setSampleSupport] = useState('');
@@ -65,12 +69,27 @@ const AdminAssignments = () => {
         ? `${title} (Đề thi ngày ${examDate})`
         : title;
 
+      // Ghép 4 phần dàn ý riêng biệt thành Scaffolding Template chuẩn Card Box
+      const combinedScaffolding = `
+1. **Mở bài (Introduction)**
+- ${outlineIntro.split('\n').join('\n- ')}
+
+2. **Thân bài 1 (Body Paragraph 1)**
+- ${outlineBody1.split('\n').join('\n- ')}
+
+3. **Thân bài 2 (Body Paragraph 2)**
+- ${outlineBody2.split('\n').join('\n- ')}
+
+4. **Kết bài (Conclusion)**
+- ${outlineConclusion.split('\n').join('\n- ')}
+      `.trim();
+
       const res = await api.post('/assignments', {
         title: formattedTitle,
         prompt,
         topic,
         targetGroup,
-        scaffoldingTemplate,
+        scaffoldingTemplate: combinedScaffolding,
         sampleAnswer: sampleExcellent,
         groupSampleAnswers: {
           support: sampleSupport,
@@ -86,7 +105,10 @@ const AdminAssignments = () => {
         setExamDate('');
         setPrompt('');
         setTopic('Education');
-        setScaffoldingTemplate('');
+        setOutlineIntro('');
+        setOutlineBody1('');
+        setOutlineBody2('');
+        setOutlineConclusion('');
         setSampleSupport('');
         setSampleAverage('');
         setSampleExcellent('');
@@ -326,18 +348,66 @@ const AdminAssignments = () => {
                   </div>
                 </div>
 
-                {/* Dàn ý Scaffolding Template hỗ trợ nhóm support & average */}
-                <div className="p-4 bg-slate-100/70 rounded-2xl border border-slate-200 space-y-2">
-                  <label className="block text-slate-800 font-bold">
-                    Dàn ý Gợi ý Scaffolding Template 4 Phần (Mở bài - Thân 1 - Thân 2 - Kết bài)
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={scaffoldingTemplate}
-                    onChange={(e) => setScaffoldingTemplate(e.target.value)}
-                    placeholder="Dàn ý 4 phần chi tiết để hiển thị dạng Card Box..."
-                    className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
-                  ></textarea>
+                {/* Dàn ý Scaffolding Template 4 Ô Riêng Biệt (Mở bài, Thân bài 1, Thân bài 2, Kết bài) */}
+                <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-4">
+                  <div className="flex items-center space-x-2 text-amber-900 font-extrabold text-sm border-b border-amber-200/60 pb-2">
+                    <BookOpen className="w-4 h-4 text-amber-600" />
+                    <span>Dàn Ý Gợi Ý Scaffolding Template (Phân Chia 4 Phần Chuẩn Card Box)</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-amber-900 font-bold mb-1">
+                        1. Mở bài (Introduction)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={outlineIntro}
+                        onChange={(e) => setOutlineIntro(e.target.value)}
+                        placeholder="Ví dụ: Paraphrase đề bài và đưa ra câu trả lời trực tiếp (Thesis Statement)..."
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
+                      ></textarea>
+                    </div>
+
+                    <div>
+                      <label className="block text-amber-900 font-bold mb-1">
+                        2. Thân bài 1 (Body Paragraph 1)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={outlineBody1}
+                        onChange={(e) => setOutlineBody1(e.target.value)}
+                        placeholder="Ví dụ: Ý chính 1 (Topic sentence 1), giải thích nguyên nhân và ví dụ thực tế..."
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
+                      ></textarea>
+                    </div>
+
+                    <div>
+                      <label className="block text-amber-900 font-bold mb-1">
+                        3. Thân bài 2 (Body Paragraph 2)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={outlineBody2}
+                        onChange={(e) => setOutlineBody2(e.target.value)}
+                        placeholder="Ví dụ: Ý chính 2 (Topic sentence 2), phân tích tác động chiều sâu..."
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
+                      ></textarea>
+                    </div>
+
+                    <div>
+                      <label className="block text-amber-900 font-bold mb-1">
+                        4. Kết bài (Conclusion)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={outlineConclusion}
+                        onChange={(e) => setOutlineConclusion(e.target.value)}
+                        placeholder="Ví dụ: Tóm tắt lại 2 quan điểm chính và khẳng định lại lập trường..."
+                        className="w-full p-3 bg-white border border-slate-200 rounded-xl font-normal text-xs"
+                      ></textarea>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Nhập Suggested Vocabulary nếu chọn targetGroup excellent */}
