@@ -58,7 +58,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://doannguyenduykha08_db_
 
 const path = require('path');
 
-// --- MIDDLEWARES ---
+// --- MIDDLEWARES & SERVERLESS MONGO CONNECT ---
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -66,11 +66,25 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Static route cho file upload
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Middleware đảm bảo MongoDB luôn sẵn sàng trong môi trường Serverless (Vercel)
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await mongoose.connect(MONGO_URI);
+      console.log('MongoDB Reconnected in Serverless Function.');
+    } catch (err) {
+      console.error('MongoDB Serverless Connection Error:', err);
+      return res.status(500).json({ success: false, message: 'Database Connection Error', error: err.message });
+    }
+  }
+  next();
+});
 
-// --- DATABASE CONNECTION ---
+// --- INITIAL DATABASE CONNECTION ---
 mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Cloud Atlas Connected Successfully.'))
   .catch((err) => console.error('MongoDB Connection Error:', err));
+
 
 // --- ROUTES ---
 app.use('/api/auth', authRoutes);
