@@ -201,7 +201,7 @@ const Task2ArticleDetail = () => {
             </span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 leading-tight">
-            {assignment.title} & sample band {adaptiveBand || '8.5+'}
+            {assignment.title} (Bài Mẫu Band {adaptiveBand || '7.0+'})
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
             Tổng hợp bài mẫu IELTS Writing Task 2 – Dạng {assignment.topic} kèm dàn ý chi tiết, từ vựng đắt giá và bài tập ôn luyện tương tác.
@@ -288,7 +288,7 @@ const Task2ArticleDetail = () => {
               </div>
 
               <span className="px-3 py-1 bg-emerald-600 text-white font-black text-xs rounded-full shadow-sm ml-2">
-                Band {adaptiveBand || '8.5+'}
+                Band {adaptiveBand || '7.0+'}
               </span>
             </div>
           </div>
