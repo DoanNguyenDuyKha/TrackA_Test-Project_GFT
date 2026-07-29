@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { Sparkles, Send, Clock, CheckCircle2, AlertCircle, BookOpen, Trophy, ArrowRight, Award } from 'lucide-react';
+import AdminConfirmModal from '../components/AdminConfirmModal';
 
 const PlacementTest = () => {
   const { user, updateUserGroup } = useAuth();
@@ -11,7 +12,8 @@ const PlacementTest = () => {
   const [essay, setEssay] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // State quản lý Modal Kết quả Đóng/Mở & Chi tiết Điểm
+  // State quản lý Modal Thông Báo & Modal Kết quả
+  const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '', type: 'warning' });
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultData, setResultData] = useState(null);
 
@@ -24,7 +26,12 @@ const PlacementTest = () => {
 
   const handleCompleteTest = async () => {
     if (!essay.trim() || essay.trim().split(/\s+/).length < 50) {
-      alert('Bài làm cần đạt tối thiểu 50 từ để hệ thống AI đánh giá phân nhóm chính xác!');
+      setAlertModal({
+        isOpen: true,
+        title: 'Yêu Cầu Tối Thiểu Bài Làm',
+        message: 'Bài làm cần đạt tối thiểu 50 từ để hệ thống AI đánh giá phân nhóm chính xác!',
+        type: 'warning'
+      });
       return;
     }
 
@@ -38,7 +45,12 @@ const PlacementTest = () => {
         const eduAssign = assignRes.data.data.find(a => a.topic === 'Education' || a.prompt.includes('university students'));
         targetAssignmentId = eduAssign ? eduAssign._id : assignRes.data.data[0]._id;
       } else {
-        alert('Đang tải dữ liệu bài thi...');
+        setAlertModal({
+          isOpen: true,
+          title: 'Thông Báo',
+          message: 'Đang tải dữ liệu bài thi, vui lòng thử lại sau giây lát...',
+          type: 'info'
+        });
         setSubmitting(false);
         return;
       }
@@ -79,7 +91,12 @@ const PlacementTest = () => {
       }
     } catch (err) {
       console.error('Placement test error:', err);
-      alert('Có lỗi xảy ra khi chấm bài test. Vui lòng thử lại!');
+      setAlertModal({
+        isOpen: true,
+        title: 'Có Lỗi Xảy Ra',
+        message: 'Có lỗi xảy ra khi chấm bài test. Vui lòng thử lại!',
+        type: 'danger'
+      });
       setSubmitting(false);
     }
   };
@@ -101,6 +118,7 @@ const PlacementTest = () => {
         return null;
     }
   };
+
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -200,7 +218,7 @@ const PlacementTest = () => {
             <Sparkles className="w-3.5 h-3.5 mr-1 text-yellow-300" />
             BÀI TEST BẮT BUỘC DÀNH CHO HỌC VIÊN MỚI
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black">Chào mừng {user?.name}! Hãy hoàn thành bài Test xếp lớp 🎯</h1>
+          <h1 className="text-2xl sm:text-3xl font-black">Chào mừng {user?.name}! Hãy hoàn thành bài Test xếp lớp</h1>
           <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
             Hệ thống LMS Adaptive không yêu cầu bạn tự chọn cấp độ. Bạn chỉ cần viết một bài luận ngắn dưới đây, AI sẽ tự động phân tích và xếp bạn vào đúng nhóm năng lực (<span className="underline font-bold">Support</span>, <span className="underline font-bold">Average</span>, hoặc <span className="underline font-bold">Excellent</span>).
           </p>
@@ -241,9 +259,21 @@ const PlacementTest = () => {
             <span>Nộp Bài Test & Đánh Giá Cấp Độ Tự Động</span>
           </button>
         </div>
+
+        {/* Alert Modal */}
+        <AdminConfirmModal
+          isOpen={alertModal.isOpen}
+          onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+          onConfirm={() => setAlertModal({ ...alertModal, isOpen: false })}
+          title={alertModal.title}
+          message={alertModal.message}
+          type={alertModal.type}
+          confirmText="Đã Hiểu"
+        />
       </div>
     </div>
   );
 };
 
 export default PlacementTest;
+

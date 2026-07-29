@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import IELTSWritingRubric from '../components/IELTSWritingRubric';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { BookOpen, Sparkles, Award, ArrowRight, CheckCircle2, TrendingUp, AlertTriangle } from 'lucide-react';
+import AdminConfirmModal from '../components/AdminConfirmModal';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -13,9 +14,11 @@ const StudentDashboard = () => {
   const [submissions, setSubmissions] = useState([]);
   const [recommendedLectures, setRecommendedLectures] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '', type: 'danger' });
 
   // Điểm nghẽn tiêu chí thấp nhất
   const [weakestCriterion, setWeakestCriterion] = useState(null);
+
 
   useEffect(() => {
     const fetchStudentDashboard = async () => {
@@ -153,10 +156,16 @@ const StudentDashboard = () => {
                     navigate(`/workspace/${assignId}`);
                   }
                 } catch (e) {
-                  alert('Có lỗi xảy ra khi tạo đề thi AI. Vui lòng thử lại!');
+                  setAlertModal({
+                    isOpen: true,
+                    title: 'Lỗi Tạo Đề Thi AI',
+                    message: 'Có lỗi xảy ra khi tạo đề thi AI. Vui lòng thử lại!',
+                    type: 'danger'
+                  });
                 } finally {
                   setLoading(false);
                 }
+
               }}
               className="px-7 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-sm rounded-2xl shadow-xl transition transform active:scale-95 flex items-center space-x-2 shrink-0"
             >
@@ -246,9 +255,21 @@ const StudentDashboard = () => {
 
         {/* SECTION 3: TRA CỨU RUBRIC CHÍNH THỨC */}
         <IELTSWritingRubric />
+
+        {/* Alert Modal */}
+        <AdminConfirmModal
+          isOpen={alertModal.isOpen}
+          onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+          onConfirm={() => setAlertModal({ ...alertModal, isOpen: false })}
+          title={alertModal.title}
+          message={alertModal.message}
+          type={alertModal.type}
+          confirmText="Đã Hiểu"
+        />
       </div>
     </div>
   );
 };
+
 
 export default StudentDashboard;

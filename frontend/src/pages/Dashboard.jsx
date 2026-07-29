@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { BookOpen, Sparkles, Clock, ArrowRight, CheckCircle2, Shield, Trophy, Zap, AlertTriangle } from 'lucide-react';
+import AdminConfirmModal from '../components/AdminConfirmModal';
 
 const Dashboard = () => {
   const { user, updateUserGroup } = useAuth();
@@ -12,6 +13,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [isEligibleForPromotion, setIsEligibleForPromotion] = useState(false);
   const [generatingTest, setGeneratingTest] = useState(false);
+  const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '', type: 'danger' });
+
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -64,11 +67,17 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error('Error generating promotion test:', err);
-      alert('Có lỗi xảy ra khi tạo đề thi nâng hạng. Vui lòng thử lại!');
+      setAlertModal({
+        isOpen: true,
+        title: 'Lỗi Sinh Đề Thi Nâng Hạng',
+        message: 'Có lỗi xảy ra khi tạo đề thi nâng hạng. Vui lòng thử lại!',
+        type: 'danger'
+      });
     } finally {
       setGeneratingTest(false);
     }
   };
+
 
   const getGroupBadge = (group) => {
     switch (group) {
@@ -303,9 +312,21 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Alert Modal */}
+        <AdminConfirmModal
+          isOpen={alertModal.isOpen}
+          onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+          onConfirm={() => setAlertModal({ ...alertModal, isOpen: false })}
+          title={alertModal.title}
+          message={alertModal.message}
+          type={alertModal.type}
+          confirmText="Đã Hiểu"
+        />
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+

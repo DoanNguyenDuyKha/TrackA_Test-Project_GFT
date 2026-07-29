@@ -213,56 +213,57 @@ const Task2ArticleDetail = () => {
           <p className="text-xs font-black text-slate-500 uppercase tracking-widest">MỤC LỤC BÀI HỌC (TABLE OF CONTENTS):</p>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-bold text-slate-700">
             <a href="#section-prompt" className="p-2.5 bg-slate-50 hover:bg-red-50 hover:text-red-600 rounded-2xl border border-slate-200 transition text-center flex items-center justify-center">
-              🚀 Đề bài
+              Đề bài
             </a>
             <a href="#section-outline" className="p-2.5 bg-slate-50 hover:bg-red-50 hover:text-red-600 rounded-2xl border border-slate-200 transition text-center flex items-center justify-center">
-              😵 Dàn ý
+              Dàn ý
             </a>
             <a href="#section-sample" className="p-2.5 bg-slate-50 hover:bg-red-50 hover:text-red-600 rounded-2xl border border-slate-200 transition text-center flex items-center justify-center">
-              📝 Bài mẫu
+              Bài mẫu
             </a>
             <a href="#section-vocab" className="p-2.5 bg-slate-50 hover:bg-red-50 hover:text-red-600 rounded-2xl border border-slate-200 transition text-center flex items-center justify-center">
-              📚 Vocab
+              Vocab
             </a>
             <a href="#section-exercise" className="p-2.5 bg-slate-50 hover:bg-red-50 hover:text-red-600 rounded-2xl border border-slate-200 transition text-center flex items-center justify-center">
-              ✨ Exercise
+              Exercise
             </a>
           </div>
         </div>
 
-        {/* SECTION 1: 🚀 ĐỀ BÀI */}
+        {/* SECTION 1: ĐỀ BÀI */}
         <div id="section-prompt" className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-4">
             <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
               <Rocket className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black text-slate-900">🚀 Đề Bài (Prompt)</h2>
+            <h2 className="text-xl font-black text-slate-900">Đề Bài (Prompt)</h2>
           </div>
           <div className="p-5 bg-red-50/50 rounded-2xl border border-red-100 italic font-serif text-base text-slate-800 leading-relaxed">
             "{assignment.prompt}"
           </div>
         </div>
 
-        {/* SECTION 2: 😵 DÀN Ý */}
+        {/* SECTION 2: DÀN Ý */}
         <div id="section-outline" className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-4">
             <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center">
               <Frown className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black text-slate-900">😵 Dàn Ý Chi Tiết (Outline)</h2>
+            <h2 className="text-xl font-black text-slate-900">Dàn Ý Chi Tiết (Outline)</h2>
           </div>
           {renderFormattedOutline(assignment.scaffoldingTemplate)}
         </div>
 
-        {/* SECTION 3: 📝 BÀI MẪU (BAND THÍCH ỨNG HOẶC 8.5+) */}
+        {/* SECTION 3: BÀI MẪU (BAND THÍCH ỨNG HOẶC 8.5+) */}
         <div id="section-sample" className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
                 <FileEdit className="w-5 h-5" />
               </div>
-              <h2 className="text-xl font-black text-slate-900">📝 Bài Mẫu (Sample Answer)</h2>
+              <h2 className="text-xl font-black text-slate-900">Bài Mẫu (Sample Answer)</h2>
             </div>
+
 
             {/* BAR ÂM THANH ĐỌC BÀI MẪU GIỐNG HỆT GIAO DIỆN DOL ENGLISH (AUDIO PLAYER WIDGET) */}
             <div className="flex items-center space-x-3 bg-slate-100 px-4 py-2 rounded-2xl border border-slate-200 shadow-inner">
@@ -304,13 +305,13 @@ const Task2ArticleDetail = () => {
           )}
         </div>
 
-        {/* SECTION 4: 📚 VOCABULARY & COLLOCATIONS */}
+        {/* SECTION 4: VOCABULARY & COLLOCATIONS */}
         <div id="section-vocab" className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-4">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-4">
             <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center">
               <BookOpen className="w-5 h-5" />
             </div>
-            <h2 className="text-xl font-black text-slate-900">📚 Từ Vựng & Collocations</h2>
+            <h2 className="text-xl font-black text-slate-900">Từ Vựng & Collocations</h2>
           </div>
 
           {assignment.suggestedVocabulary && assignment.suggestedVocabulary.length > 0 ? (
@@ -336,17 +337,18 @@ const Task2ArticleDetail = () => {
           )}
         </div>
 
-        {/* SECTION 5: ✨ BÀI TẬP EXERCISE TƯƠNG TÁC (CHIA THÀNH 2 BÀI CHUẨN DOL ENGLISH) */}
+        {/* SECTION 5: BÀI TẬP EXERCISE TƯƠNG TÁC (CHIA THÀNH 2 BÀI CHUẨN DOL ENGLISH) */}
         <div id="section-exercise" className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 space-y-8">
           <div className="flex items-center space-x-2 border-b border-slate-100 pb-4">
             <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900">✨ Bài Tập Ôn Luyện (Exercise)</h2>
+              <h2 className="text-xl font-black text-slate-900">Bài Tập Ôn Luyện (Exercise)</h2>
               <p className="text-xs text-slate-500">Hoàn thành 2 bài tập dưới đây (Mỗi bài 10 câu) để củng cố từ vựng & cấu trúc bài viết.</p>
             </div>
           </div>
+
 
           {assignment.exercises && assignment.exercises.length > 0 ? (
             <div className="space-y-10">

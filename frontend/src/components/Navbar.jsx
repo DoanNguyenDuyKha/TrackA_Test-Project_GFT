@@ -141,7 +141,6 @@ const Navbar = () => {
       });
 
       if (res.data.success) {
-        alert(res.data.message);
         setShowSendDocModal(false);
         setDocTitle('');
         setDocMessage('');
@@ -152,11 +151,11 @@ const Navbar = () => {
       }
     } catch (err) {
       console.error('Error sending document:', err);
-      alert('Có lỗi xảy ra khi gửi tài liệu.');
     } finally {
       setSendingDoc(false);
     }
   };
+
 
   const handleLogout = () => {
     logout();

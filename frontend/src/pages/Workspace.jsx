@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { Clock, Send, Save, BookOpen, AlertCircle, Sparkles, CheckCircle2, FileText, ChevronRight, CheckSquare, HelpCircle } from 'lucide-react';
+import AdminConfirmModal from '../components/AdminConfirmModal';
 
 const Workspace = () => {
   const { id } = useParams(); // Assignment ID
@@ -15,6 +16,8 @@ const Workspace = () => {
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+  const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '', type: 'warning' });
+
 
   // Adaptive Sample State
   const [adaptiveSample, setAdaptiveSample] = useState('');
@@ -85,7 +88,12 @@ const Workspace = () => {
   // Nộp bài chấm AI
   const handleSubmitEssay = async () => {
     if (!studentAnswers.trim() || wordCount < 50) {
-      alert('Bài luận quá ngắn! Vui lòng viết tối thiểu 50 từ trước khi nộp bài.');
+      setAlertModal({
+        isOpen: true,
+        title: 'Yêu Cầu Độ Dài Bài Viết',
+        message: 'Bài luận quá ngắn! Vui lòng viết tối thiểu 50 từ trước khi nộp bài.',
+        type: 'warning'
+      });
       return;
     }
 
@@ -102,11 +110,17 @@ const Workspace = () => {
       }
     } catch (err) {
       console.error('Error submitting essay:', err);
-      alert('Có lỗi xảy ra trong quá trình chấm bài AI. Vui lòng thử lại!');
+      setAlertModal({
+        isOpen: true,
+        title: 'Có Lỗi Xảy Ra',
+        message: 'Có lỗi xảy ra trong quá trình chấm bài AI. Vui lòng thử lại!',
+        type: 'danger'
+      });
     } finally {
       setSubmitting(false);
     }
   };
+
 
   // Chấm bài tập Exercise tương tác trực tiếp
   const handleCheckExercise = (exIdx, correctAnswer) => {
@@ -219,11 +233,16 @@ const Workspace = () => {
                     <span>{savingDraft ? 'Đang lưu...' : 'Lưu Nháp'}</span>
                   </button>
 
-                  {/* AI Support Hint Button dành riêng cho Nhóm Cần Hỗ Trợ */}
+              {/* AI Support Hint Button dành riêng cho Nhóm Cần Hỗ Trợ */}
                   {user?.studentGroup === 'support' && (
                     <button
                       onClick={() => {
-                        alert(`💡 GIỢI Ý Ý TƯỞNG VÀ CẤU TRÚC CHO BÀI LÀM:\n\n1. Mở bài (Introduction): Hãy diễn đạt lại đề bài bằng cấu trúc "While some argue that [Ý 1], I believe that [Ý 2]".\n2. Thân bài 1 (Body 1): Đưa ra 2 lý do支持 quan điểm 1. Dùng các từ nối: 'Firstly', 'Furthermore'.\n3. Thân bài 2 (Body 2): Phân tích quan điểm thứ 2 với từ vựng gợi ý: 'Substantial benefit', 'Imperative role'.\n4. Kết bài (Conclusion): Tóm tắt bằng 'In conclusion, balancing both approaches is essential'.`);
+                        setAlertModal({
+                          isOpen: true,
+                          title: 'Gợi Ý Ý Tưởng & Cấu Trúc',
+                          message: '1. Mở bài (Introduction): Diễn đạt lại đề bài bằng cấu trúc "While some argue that [Ý 1], I believe that [Ý 2]".\n2. Thân bài 1 (Body 1): Đưa ra 2 lý do hỗ trợ quan điểm 1. Dùng từ nối: "Firstly", "Furthermore".\n3. Thân bài 2 (Body 2): Phân tích quan điểm thứ 2 với từ vựng gợi ý: "Substantial benefit", "Imperative role".\n4. Kết bài (Conclusion): Tóm tắt bằng "In conclusion, balancing both approaches is essential".',
+                          type: 'info'
+                        });
                       }}
                       className="flex items-center space-x-2 px-4 py-3 bg-amber-50 hover:bg-amber-100 text-amber-800 font-extrabold rounded-2xl text-sm border border-amber-200 transition"
                     >
@@ -255,33 +274,34 @@ const Workspace = () => {
                   onClick={() => setActiveTab('prompt')}
                   className={`py-2.5 rounded-xl transition ${activeTab === 'prompt' ? 'bg-white text-blue-600 shadow-md font-black' : 'hover:text-slate-900'}`}
                 >
-                  🚀 Đề bài
+                  Đề bài
                 </button>
                 <button
                   onClick={() => setActiveTab('outline')}
                   className={`py-2.5 rounded-xl transition ${activeTab === 'outline' ? 'bg-white text-blue-600 shadow-md font-black' : 'hover:text-slate-900'}`}
                 >
-                  😵 Dàn ý
+                  Dàn ý
                 </button>
                 <button
                   onClick={() => setActiveTab('sample')}
                   className={`py-2.5 rounded-xl transition ${activeTab === 'sample' ? 'bg-white text-blue-600 shadow-md font-black' : 'hover:text-slate-900'}`}
                 >
-                  📝 Bài mẫu
+                  Bài mẫu
                 </button>
                 <button
                   onClick={() => setActiveTab('vocab')}
                   className={`py-2.5 rounded-xl transition ${activeTab === 'vocab' ? 'bg-white text-blue-600 shadow-md font-black' : 'hover:text-slate-900'}`}
                 >
-                  📚 Vocab
+                  Vocab
                 </button>
                 <button
                   onClick={() => setActiveTab('exercise')}
                   className={`py-2.5 rounded-xl transition ${activeTab === 'exercise' ? 'bg-white text-blue-600 shadow-md font-black' : 'hover:text-slate-900'}`}
                 >
-                  ✨ Exercise
+                  Exercise
                 </button>
               </div>
+
 
               {/* Tab Content Box Mở Rộng Rãi Dài Xuống Toàn Bộ Màn Hình */}
               <div className="space-y-6 min-h-[480px]">
@@ -479,18 +499,33 @@ const Workspace = () => {
                           );
                         })}
                       </div>
+
                     ) : (
                       <p className="text-xs text-slate-500 italic">Chưa có bài tập tương tác cho đề thi này.</p>
                     )}
                   </div>
                 )}
+
               </div>
             </div>
           </div>
         </div>
       </div>
+
+
+      {/* Alert Modal */}
+      <AdminConfirmModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        onConfirm={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+        confirmText="Đã Hiểu"
+      />
     </div>
   );
 };
 
 export default Workspace;
+

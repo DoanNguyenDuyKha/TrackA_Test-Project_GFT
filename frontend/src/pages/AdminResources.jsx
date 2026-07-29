@@ -309,7 +309,7 @@ const AdminResources = () => {
                     className="w-full py-2.5 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-extrabold text-xs rounded-2xl shadow-sm transition flex items-center justify-center space-x-2"
                   >
                     <Send className="w-4 h-4" />
-                    <span>Gửi Cho Học Viên Realtime 🚀</span>
+                    <span>Gửi Cho Học Viên Realtime</span>
                   </button>
                 </div>
               </div>
@@ -386,10 +386,11 @@ const AdminResources = () => {
                       onChange={(e) => setDefaultTargetGroup(e.target.value)}
                       className="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-indigo-900 cursor-pointer"
                     >
-                      <option value="all">🌐 Tất Cả Học Viên</option>
-                      <option value="support">🔴 Chỉ Nhóm Support (&lt;6.0)</option>
-                      <option value="average">🟡 Chỉ Nhóm Average (6.0-6.5)</option>
-                      <option value="excellent">🟣 Chỉ Nhóm Excellent (7.0+)</option>
+                      <option value="all">Tất Cả Học Viên</option>
+                      <option value="support">Chỉ Nhóm Support (&lt;6.0)</option>
+                      <option value="average">Chỉ Nhóm Average (6.0-6.5)</option>
+                      <option value="excellent">Chỉ Nhóm Excellent (7.0+)</option>
+
                     </select>
                   </div>
                 </div>
@@ -487,7 +488,7 @@ const AdminResources = () => {
                     disabled={sendingDoc}
                     className="px-8 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs rounded-2xl shadow-lg hover:shadow-xl transition"
                   >
-                    {sendingDoc ? 'Đang Phát Realtime...' : 'Phát Tài Liệu Ngay 🚀'}
+                    {sendingDoc ? 'Đang Phát Realtime...' : 'Phát Tài Liệu Ngay'}
                   </button>
                 </div>
               </form>
