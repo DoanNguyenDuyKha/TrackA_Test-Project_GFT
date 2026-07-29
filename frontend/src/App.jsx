@@ -2,7 +2,9 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+
 
 // Pages Import
 import Login from './pages/Login';
@@ -36,9 +38,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-slate-50 font-sans antialiased text-slate-900">
+        <div className="min-h-screen flex flex-col bg-slate-50 font-sans antialiased text-slate-900">
           <Navbar />
-          <main>
+          <main className="flex-1">
+
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
@@ -137,8 +140,8 @@ function App() {
                 }
               />
             </Routes>
-
           </main>
+          <Footer />
         </div>
       </Router>
     </AuthProvider>
