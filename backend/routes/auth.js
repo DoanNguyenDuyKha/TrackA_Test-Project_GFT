@@ -92,9 +92,15 @@ router.post('/login', async (req, res) => {
     });
   } catch (error) {
     console.error('Login Error:', error);
-    return res.status(500).json({ success: false, message: 'Server error during login', error: error.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error during login', 
+      error: error.message,
+      stack: error.stack 
+    });
   }
 });
+
 
 // GET /api/auth/me - Lấy thông tin cá nhân hiện tại
 router.get('/me', authenticateToken, async (req, res) => {
