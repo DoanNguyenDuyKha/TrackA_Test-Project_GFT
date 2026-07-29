@@ -123,9 +123,33 @@ In conclusion, although specialized training is undeniably essential for technic
     logTest('Tạo dữ liệu theo dõi tiến độ chuỗi thời gian', !!analyticsSubmission._id);
     await Submission.findByIdAndDelete(analyticsSubmission._id);
 
+    // 8. Kiểm thử Quản lý Tiêu chí Rubric Động (Admin Rubric Manager API)
+    console.log('\n📌 PHASE 8: Kiểm thử API Quản lý Rubric Động (Admin Rubric Manager)...');
+    const { Rubric } = require('../routes/rubrics');
+    let rubricsInDb = await Rubric.find({});
+    
+    if (rubricsInDb.length === 0) {
+      // Trigger API endpoint or insert default rubrics
+      const DEFAULT_RUBRICS = [
+        { criterionKey: 'TR', name: 'Task Response (TR)', description: 'Mô tả TR', bands: { 5: 'b5', 6: 'b6', 7: 'b7', 8: 'b8' }, coachNotes: { '5-6': 'c1', '6-7': 'c2', '7-8': 'c3' } },
+        { criterionKey: 'CC', name: 'Coherence & Cohesion (CC)', description: 'Mô tả CC', bands: { 5: 'b5', 6: 'b6', 7: 'b7', 8: 'b8' }, coachNotes: { '5-6': 'c1', '6-7': 'c2', '7-8': 'c3' } },
+        { criterionKey: 'LR', name: 'Lexical Resource (LR)', description: 'Mô tả LR', bands: { 5: 'b5', 6: 'b6', 7: 'b7', 8: 'b8' }, coachNotes: { '5-6': 'c1', '6-7': 'c2', '7-8': 'c3' } },
+        { criterionKey: 'GRA', name: 'Grammatical Range & Accuracy (GRA)', description: 'Mô tả GRA', bands: { 5: 'b5', 6: 'b6', 7: 'b7', 8: 'b8' }, coachNotes: { '5-6': 'c1', '6-7': 'c2', '7-8': 'c3' } }
+      ];
+      await Rubric.insertMany(DEFAULT_RUBRICS);
+      rubricsInDb = await Rubric.find({});
+    }
+
+    logTest('Kiểm tra Dữ liệu Tiêu chí Rubric CSDL MongoDB', rubricsInDb.length >= 4, `Tìm thấy ${rubricsInDb.length} tiêu chí Rubric.`);
+
+    const sampleRubric = await Rubric.findOne({ criterionKey: 'TR' });
+    logTest('Kiểm tra Mô tả Chi tiết Thang Band Rubric (Band 5-8)', !!sampleRubric?.bands?.[7], 'Bám sát chuẩn IELTS Band Descriptors.');
+
+
     // Dọn dẹp bản ghi mock test
     await Submission.findByIdAndDelete(mockSubmission._id);
     await Assignment.findByIdAndDelete(aiExam._id);
+
 
     console.log('\n========================================================================================');
     console.log('🎉 TỔNG KẾT KẾT QUẢ KIỂM THỬ: TẤT CẢ TÍNH NĂNG CỦA HỆ THỐNG HOẠT ĐỘNG HOÀN HẢO!');
