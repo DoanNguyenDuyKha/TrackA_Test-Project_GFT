@@ -34,30 +34,30 @@ function fallbackGrading(studentAnswers, assignment) {
     }
   });
 
-  let overallBand = 7.0;
-
-  if (wordCount >= 240 && academicWordCount >= 12) {
+  // Đánh giá dựa trên độ dài từ vựng & cấu trúc
+  if (wordCount >= 220 && academicWordCount >= 6) {
     overallBand = 8.0;
-  } else if (wordCount >= 220 && academicWordCount >= 8) {
+  } else if (wordCount >= 180 && academicWordCount >= 4) {
     overallBand = 7.5;
-  } else if (wordCount >= 180 && academicWordCount >= 5) {
+  } else if (wordCount >= 150 && academicWordCount >= 2) {
     overallBand = 7.0;
-  } else if (wordCount >= 140) {
+  } else if (wordCount >= 120) {
     overallBand = 6.5;
-  } else if (wordCount >= 100) {
+  } else if (wordCount >= 80) {
     overallBand = 6.0;
   } else {
     overallBand = 5.5;
   }
 
   // Tính điểm 4 tiêu chí chuẩn
-  const trScore = Math.min(9.0, overallBand + (wordCount >= 250 ? 0.5 : 0));
+  const trScore = Math.min(9.0, overallBand + (wordCount >= 200 ? 0.5 : 0));
   const ccScore = overallBand;
-  const lrScore = Math.min(9.0, overallBand + (academicWordCount >= 10 ? 0.5 : 0));
+  const lrScore = Math.min(9.0, overallBand + (academicWordCount >= 5 ? 0.5 : 0));
   const graScore = overallBand;
 
   // Tính lại điểm Overall Band trung bình cộng chuẩn Cambridge
   const calculatedOverall = Math.round(((trScore + ccScore + lrScore + graScore) / 4) * 2) / 2;
+
 
   return {
     overallBand: calculatedOverall,
