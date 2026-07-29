@@ -390,15 +390,81 @@ const AdminStudentsMonitor = () => {
                         </div>
                       </div>
 
-                      {/* Student Original Essay */}
+                      {/* Student Original Essay & Corrections */}
                       <div className="space-y-1">
-                        <span className="text-xs font-bold text-slate-500">Bài luận gốc của học viên:</span>
-                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-serif leading-relaxed text-slate-800 max-h-48 overflow-y-auto">
-                          {inspectSubmission.studentAnswers}
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-bold text-slate-500">Bài luận của học viên & Chi tiết lỗi bóc tách:</span>
+                          <span className="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100">
+                            Lỗi bóc tách: {inspectSubmission.detailedCorrections?.filter(c => c.original && c.original.trim() && (inspectSubmission.studentAnswers.includes(c.original.trim()) || inspectSubmission.studentAnswers.toLowerCase().includes(c.original.trim().toLowerCase()))).length || 0}
+                          </span>
+                        </div>
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs font-serif leading-relaxed text-slate-800 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                          {(() => {
+                            const studentAnswers = inspectSubmission.studentAnswers || '';
+                            const corrections = inspectSubmission.detailedCorrections || [];
+                            const validCorrections = corrections.filter(corr => corr.original && corr.original.trim() && (studentAnswers.includes(corr.original.trim()) || studentAnswers.toLowerCase().includes(corr.original.trim().toLowerCase())));
+
+                            if (validCorrections.length === 0) {
+                              return studentAnswers;
+                            }
+
+                            let parts = [studentAnswers];
+                            validCorrections.forEach((corr, index) => {
+                              const target = corr.original.trim();
+                              let newParts = [];
+                              parts.forEach(part => {
+                                if (typeof part === 'string') {
+                                  const regex = new RegExp(`(${target.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')})`, 'gi');
+                                  const splitArray = part.split(regex);
+                                  for (let i = 0; i < splitArray.length; i++) {
+                                    if (splitArray[i].toLowerCase() === target.toLowerCase()) {
+                                      newParts.push({ isCorrection: true, corrObj: corr, text: splitArray[i], key: `${index}-${i}` });
+                                    } else if (splitArray[i]) {
+                                      newParts.push(splitArray[i]);
+                                    }
+                                  }
+                                } else {
+                                  newParts.push(part);
+                                }
+                              });
+                              parts = newParts;
+                            });
+
+                            return parts.map((part, idx) => {
+                              if (typeof part === 'string') return <span key={idx}>{part}</span>;
+                              if (part.isCorrection) {
+                                return (
+                                  <span key={part.key} className="bg-red-100 text-red-950 border-b border-red-500 font-semibold px-1 rounded-sm">
+                                    {part.text}
+                                  </span>
+                                );
+                              }
+                              return null;
+                            });
+                          })()}
                         </div>
                       </div>
+
+                      {/* Detailed corrections list for Admin */}
+                      {inspectSubmission.detailedCorrections && inspectSubmission.detailedCorrections.length > 0 && (
+                        <div className="space-y-2 pt-2 border-t border-slate-100">
+                          <span className="text-xs font-bold text-slate-700">Chi tiết phản hồi sửa lỗi từ AI:</span>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {inspectSubmission.detailedCorrections.map((corr, cIdx) => (
+                              <div key={cIdx} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
+                                <div className="flex justify-between font-mono">
+                                  <span className="line-through text-red-600 font-semibold">{corr.original}</span>
+                                  <span className="text-emerald-600 font-extrabold">➔ {corr.corrected}</span>
+                                </div>
+                                <p className="text-slate-600 text-[11px] leading-relaxed">{corr.explanation}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
+
                     <div className="text-center py-12 text-slate-400 text-xs">
                       Chọn bài nộp ở cột bên trái để xem chi tiết kết quả chấm.
                     </div>

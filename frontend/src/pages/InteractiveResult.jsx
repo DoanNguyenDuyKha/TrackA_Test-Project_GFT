@@ -75,25 +75,38 @@ const InteractiveResult = () => {
       return <p className="whitespace-pre-wrap font-serif leading-relaxed text-slate-800">{studentAnswers}</p>;
     }
 
+    // Lọc các lỗi thực sự xuất hiện trong bài làm (Fuzzy & Trim Check)
+    const validCorrections = detailedCorrections.filter(corr => {
+      if (!corr.original || !corr.original.trim()) return false;
+      const target = corr.original.trim();
+      return studentAnswers.includes(target) || studentAnswers.toLowerCase().includes(target.toLowerCase());
+    });
+
+    if (validCorrections.length === 0) {
+      return <p className="whitespace-pre-wrap font-serif leading-relaxed text-slate-800">{studentAnswers}</p>;
+    }
+
     // Tách và tìm vị trí các đoạn sai
     let parts = [studentAnswers];
 
-    detailedCorrections.forEach((corr, index) => {
-      const target = corr.original;
-      if (!target) return;
-
+    validCorrections.forEach((corr, index) => {
+      const target = corr.original.trim();
       let newParts = [];
       parts.forEach(part => {
         if (typeof part === 'string') {
-          const splitArray = part.split(target);
+          // Check case-insensitive regex match
+          const regex = new RegExp(`(${target.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')})`, 'gi');
+          const splitArray = part.split(regex);
           for (let i = 0; i < splitArray.length; i++) {
-            newParts.push(splitArray[i]);
-            if (i < splitArray.length - 1) {
+            if (splitArray[i].toLowerCase() === target.toLowerCase()) {
               newParts.push({
                 isCorrection: true,
                 corrObj: corr,
+                text: splitArray[i],
                 key: `${index}-${i}`
               });
+            } else if (splitArray[i]) {
+              newParts.push(splitArray[i]);
             }
           }
         } else {
@@ -122,7 +135,7 @@ const InteractiveResult = () => {
                 onMouseLeave={() => setActiveCorrection(null)}
                 className="bg-red-100 text-red-950 border-b-2 border-red-500 font-semibold cursor-pointer px-1 rounded-sm transition duration-150 hover:bg-red-200"
               >
-                {part.corrObj.original}
+                {part.text}
               </span>
             );
           }
@@ -131,6 +144,7 @@ const InteractiveResult = () => {
       </div>
     );
   };
+
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -269,8 +283,11 @@ const InteractiveResult = () => {
             </div>
 
             <div className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-              Tổng số lỗi bóc tách: <span className="font-extrabold text-red-600">{detailedCorrections?.length || 0}</span>
+              Tổng số lỗi bóc tách: <span className="font-extrabold text-red-600">
+                {detailedCorrections?.filter(c => c.original && c.original.trim() && (studentAnswers.includes(c.original.trim()) || studentAnswers.toLowerCase().includes(c.original.trim().toLowerCase()))).length || 0}
+              </span>
             </div>
+
           </div>
 
           <div className="p-6 bg-slate-50/50 rounded-2xl border border-slate-200 min-h-[250px]">
