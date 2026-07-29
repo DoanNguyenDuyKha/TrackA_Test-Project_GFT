@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { UserCheck, Shield, Sparkles, Eye, CheckCircle2, ChevronRight, X, Edit3, Trash2 } from 'lucide-react';
+import AdminConfirmModal from '../components/AdminConfirmModal';
+
 
 const AdminStudentsMonitor = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -144,22 +146,37 @@ const AdminStudentsMonitor = () => {
     }
   };
 
-  // Xóa HOÀN TOÀN học viên & tất cả bài nộp (Icon Thùng rác)
-  const handleDeleteStudentPermanently = async (student) => {
-    if (!window.confirm(`⚠️ BẠN CÓ CHẮC CHẮN MỐN XÓA HOÀN TOÀN HỌC VIÊN "${student.name.toUpperCase()}"?\n\nHành động này sẽ xóa vĩnh viễn tài khoản học viên và tất cả các bài nộp trong hệ thống mà không bị ràng buộc bởi bất kỳ khóa chính/khóa ngoại nào!`)) {
-      return;
-    }
+  // Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'danger',
+    confirmText: 'Xác Nhận Xóa',
+    onConfirm: () => {}
+  });
 
-    try {
-      const res = await api.delete(`/auth/users/${student._id}`);
-      if (res.data.success) {
-        fetchMonitorData();
+  // Xóa HOÀN TOÀN học viên & tất cả bài nộp (Icon Thùng rác)
+  const handleDeleteStudentPermanently = (student) => {
+    setConfirmModal({
+      isOpen: true,
+      title: '⚠️ Xác Nhận Xóa Hoàn Toàn Học Viên',
+      message: `Bạn có chắc chắn muốn xóa vĩnh viễn học viên "${student.name.toUpperCase()}"? Hành động này sẽ xóa toàn bộ tài khoản và tất cả bài nộp trong hệ thống mà không bị ràng buộc bởi bất kỳ khóa chính/khóa ngoại nào!`,
+      type: 'danger',
+      confirmText: 'Xóa Hoàn Toàn 🗑️',
+      onConfirm: async () => {
+        try {
+          const res = await api.delete(`/auth/users/${student._id}`);
+          if (res.data.success) {
+            fetchMonitorData();
+          }
+        } catch (err) {
+          console.error('Error deleting student:', err);
+        }
       }
-    } catch (err) {
-      console.error('Error deleting student:', err);
-      alert('Có lỗi xảy ra khi xóa học viên.');
-    }
+    });
   };
+
 
   const getBadge = (group) => {
     switch (group) {
@@ -481,10 +498,23 @@ const AdminStudentsMonitor = () => {
             </div>
           </div>
         )}
+
+        {/* Admin Confirm Modal */}
+
+        <AdminConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+          onConfirm={confirmModal.onConfirm}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          type={confirmModal.type}
+          confirmText={confirmModal.confirmText}
+        />
       </div>
     </div>
   );
 };
 
 export default AdminStudentsMonitor;
+
 

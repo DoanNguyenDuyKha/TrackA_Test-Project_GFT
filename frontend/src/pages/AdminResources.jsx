@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { FolderOpen, Plus, Search, Send, Edit3, Trash2, FileText, Check, Sparkles, X, Download, ExternalLink } from 'lucide-react';
+import AdminConfirmModal from '../components/AdminConfirmModal';
+
 
 const AdminResources = () => {
   const [resources, setResources] = useState([]);
@@ -129,18 +131,35 @@ const AdminResources = () => {
     }
   };
 
+  // Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'danger',
+    confirmText: 'Xác Nhận Xóa',
+    onConfirm: () => {}
+  });
+
   // Delete resource from bank
-  const handleDeleteResource = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa tài liệu này khỏi Kho?')) return;
-    try {
-      const res = await api.delete(`/resources/${id}`);
-      if (res.data.success) {
-        fetchResources();
+  const handleDeleteResource = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Xác Nhận Xóa Tài Liệu',
+      message: 'Bạn có chắc chắn muốn xóa tài liệu này khỏi Kho lưu trữ Admin?',
+      type: 'danger',
+      confirmText: 'Xóa Khỏi Kho 🗑️',
+      onConfirm: async () => {
+        try {
+          const res = await api.delete(`/resources/${id}`);
+          if (res.data.success) {
+            fetchResources();
+          }
+        } catch (err) {
+          console.error('Error deleting resource:', err);
+        }
       }
-    } catch (err) {
-      console.error('Error deleting resource:', err);
-      alert('Có lỗi xảy ra khi xóa tài liệu.');
-    }
+    });
   };
 
   // Open Send Modal for a specific resource Card
@@ -166,16 +185,23 @@ const AdminResources = () => {
       });
 
       if (res.data.success) {
-        alert(res.data.message);
+        setConfirmModal({
+          isOpen: true,
+          title: 'Phát Tài Liệu Thành Công 🚀',
+          message: res.data.message,
+          type: 'success',
+          confirmText: 'Đóng',
+          onConfirm: () => {}
+        });
         setShowSendModal(false);
       }
     } catch (err) {
       console.error('Error sending resource from bank:', err);
-      alert('Có lỗi xảy ra khi phát tài liệu.');
     } finally {
       setSendingDoc(false);
     }
   };
+
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -468,9 +494,22 @@ const AdminResources = () => {
             </div>
           </div>
         )}
+
+        {/* Admin Confirm Modal */}
+
+        <AdminConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+          onConfirm={confirmModal.onConfirm}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          type={confirmModal.type}
+          confirmText={confirmModal.confirmText}
+        />
       </div>
     </div>
   );
 };
 
 export default AdminResources;
+

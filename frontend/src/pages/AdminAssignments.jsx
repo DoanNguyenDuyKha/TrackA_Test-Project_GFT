@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { BookOpen, Plus, Trash2, Edit3, CheckCircle2, Sparkles, Filter, X, Eye } from 'lucide-react';
+import AdminConfirmModal from '../components/AdminConfirmModal';
+
 
 
 const AdminAssignments = () => {
@@ -182,22 +184,40 @@ const AdminAssignments = () => {
       }
     } catch (err) {
       console.error('Error saving assignment:', err.response?.data || err.message);
-      const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
-      alert(`Có lỗi xảy ra khi lưu đề thi: ${errMsg}`);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa hoàn toàn đề thi này?')) return;
-    try {
-      const res = await api.delete(`/assignments/${id}`);
-      if (res.data.success) {
-        fetchAssignments();
+  // Confirm Modal State
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'danger',
+    confirmText: 'Xác Nhận Xóa',
+    onConfirm: () => {}
+  });
+
+  const handleDelete = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Xác Nhận Xóa Đề Thi',
+      message: 'Bạn có chắc chắn muốn xóa hoàn toàn đề thi này khỏi hệ thống?',
+      type: 'danger',
+      confirmText: 'Xóa Vĩnh Viễn 🗑️',
+      onConfirm: async () => {
+        try {
+          const res = await api.delete(`/assignments/${id}`);
+          if (res.data.success) {
+            fetchAssignments();
+          }
+        } catch (err) {
+          console.error('Error deleting assignment:', err);
+        }
       }
-    } catch (err) {
-      console.error('Error deleting assignment:', err);
-    }
+    });
   };
+
 
   const getTargetBadge = (group) => {
     switch (group) {
@@ -683,10 +703,23 @@ const AdminAssignments = () => {
             </div>
           </div>
         )}
+
+        {/* Admin Confirm Modal */}
+
+        <AdminConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+          onConfirm={confirmModal.onConfirm}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          type={confirmModal.type}
+          confirmText={confirmModal.confirmText}
+        />
       </div>
     </div>
   );
 };
 
 export default AdminAssignments;
+
 
