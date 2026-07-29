@@ -66,24 +66,36 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Static route cho file upload
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Middleware đảm bảo MongoDB luôn sẵn sàng trong môi trường Serverless (Vercel)
-app.use(async (req, res, next) => {
-  if (mongoose.connection.readyState !== 1) {
-    try {
-      await mongoose.connect(MONGO_URI);
-      console.log('MongoDB Reconnected in Serverless Function.');
-    } catch (err) {
-      console.error('MongoDB Serverless Connection Error:', err);
-      return res.status(500).json({ success: false, message: 'Database Connection Error', error: err.message });
-    }
+// MongoDB Cached Connection for Vercel Serverless Functions
+let cachedDb = null;
+
+const connectToDatabase = async () => {
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    return cachedDb;
   }
-  next();
+  const db = await mongoose.connect(MONGO_URI, {
+    bufferCommands: false,
+    serverSelectionTimeoutMS: 5000
+  });
+  cachedDb = db;
+  return db;
+};
+
+// Middleware kết nối CSDLServerless
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (err) {
+    console.error('MongoDB Serverless Connection Error:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Lỗi kết nối CSDL MongoDB Atlas từ Serverless Vercel. Hãy kiểm tra Network Access (IP Whitelist) trong MongoDB Atlas.',
+      error: err.message 
+    });
+  }
 });
 
-// --- INITIAL DATABASE CONNECTION ---
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('MongoDB Cloud Atlas Connected Successfully.'))
-  .catch((err) => console.error('MongoDB Connection Error:', err));
 
 
 // --- ROUTES ---
