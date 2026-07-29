@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "projects": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "backend",
+      "framework": "express"
+    }
+  }
+}
