@@ -13,8 +13,10 @@ const submissionRoutes = require('./routes/submissions');
 const gradingRoutes = require('./routes/grading');
 const adaptiveSampleRoutes = require('./routes/adaptiveSample');
 const notificationRoutes = require('./routes/notifications');
+const resourceRoutes = require('./routes/resources');
 
 const app = express();
+
 const server = http.createServer(app);
 
 // Initialize Socket.IO with CORS settings
