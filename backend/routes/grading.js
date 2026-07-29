@@ -516,3 +516,5 @@ router.post('/submit-promotion-test', authenticateToken, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.fallbackGrading = fallbackGrading;
+
