@@ -37,14 +37,33 @@ const PlacementTest = () => {
 
     setSubmitting(true);
     try {
-      const assignRes = await api.get('/assignments');
+      const assignRes = await api.get('/assignments?showAll=true');
       let targetAssignmentId;
 
       if (assignRes.data.success && assignRes.data.data.length > 0) {
-        // Ưu tiên bài thi đúng chủ đề Education của Đề bài Placement Test
-        const eduAssign = assignRes.data.data.find(a => a.topic === 'Education' || a.prompt.includes('university students'));
-        targetAssignmentId = eduAssign ? eduAssign._id : assignRes.data.data[0]._id;
+        // Tìm đề thi dành riêng cho Placement Test (chủ đề Diagnostic Placement Test)
+        const placementAssign = assignRes.data.data.find(a => a.title.includes('Placement') || a.targetGroup === 'placement');
+        if (placementAssign) {
+          targetAssignmentId = placementAssign._id;
+        } else {
+          // Tạo một đề thi riêng cho Placement Test với targetGroup là 'placement' để không bị lẫn vào bài nộp đề thi chính thức
+          const createRes = await api.post('/assignments', {
+            title: placementPrompt.title,
+            prompt: placementPrompt.prompt,
+            topic: placementPrompt.topic,
+            targetGroup: 'placement',
+            scaffoldingTemplate: '1. Mở bài\n2. Thân bài 1\n3. Thân bài 2\n4. Kết bài'
+          }).catch(() => null);
+
+          if (createRes && createRes.data && createRes.data.success) {
+            targetAssignmentId = createRes.data.data._id;
+          } else {
+            const eduAssign = assignRes.data.data.find(a => a.topic === 'Education' || a.prompt.includes('university students'));
+            targetAssignmentId = eduAssign ? eduAssign._id : assignRes.data.data[0]._id;
+          }
+        }
       } else {
+
         setAlertModal({
           isOpen: true,
           title: 'Thông Báo',

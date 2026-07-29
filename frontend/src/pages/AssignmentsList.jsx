@@ -123,8 +123,13 @@ const AssignmentsList = () => {
               .filter(item => {
                 if (user?.role === 'student') {
                   const isAiExam = item.title?.includes('AI Master Exam') || item.title?.includes('Test Code #') || item.prompt?.includes('Test Code #');
-                  
-                  // Không hiển thị đề AI của người khác
+                  const isPlacementExam = item.targetGroup === 'placement' || item.title?.includes('Placement');
+
+                  // Không hiển thị bài Placement Test đầu vào hoặc đề AI của người khác trong danh sách đề thi chính thức
+                  if (isPlacementExam) {
+                    return false;
+                  }
+
                   if (isAiExam && user?.studentGroup !== 'excellent') {
                     return false;
                   }
@@ -136,6 +141,7 @@ const AssignmentsList = () => {
                 }
                 return true;
               })
+
               .map((item) => {
                 const submission = submissionsMap[item._id];
                 const isCompleted = !!submission;
