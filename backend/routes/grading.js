@@ -316,12 +316,33 @@ router.post('/submit', authenticateToken, async (req, res) => {
     const { assignmentId, studentAnswers, customPrompt } = req.body;
     const studentId = req.user._id;
 
-    if (!assignmentId || !studentAnswers) {
+    if (!assignmentId || !studentAnswers || !studentAnswers.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide assignmentId and studentAnswers'
+        message: 'Vui lòng nhập bài luận trước khi nộp bài.'
       });
     }
+
+    const words = studentAnswers.trim().split(/\s+/).filter(Boolean);
+    const isGibberish = words.some(w => /(.)\1{4,}/.test(w) || w.length > 25);
+    const uniqueWords = new Set(words.map(w => w.toLowerCase().replace(/[^a-z]/g, ''))).size;
+    const wordDiversityRatio = words.length > 0 ? (uniqueWords / words.length) : 0;
+
+    // Chặn bài nộp rác hoặc ngắn không hợp lệ
+    if (words.length < 50) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bài làm quá ngắn! Vui lòng viết tối thiểu 50 từ trước khi nộp bài để AI chấm điểm.'
+      });
+    }
+
+    if (isGibberish || wordDiversityRatio < 0.3) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phát hiện văn bản rác / vô nghĩa! Bài làm chứa các chuỗi ký tự gõ lặp lại không hợp lệ. Vui lòng viết câu tiếng Anh hoàn chỉnh.'
+      });
+    }
+
 
     const [student, assignment] = await Promise.all([
       User.findById(studentId),

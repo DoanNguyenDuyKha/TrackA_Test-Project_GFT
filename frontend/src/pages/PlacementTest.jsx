@@ -91,11 +91,12 @@ const PlacementTest = () => {
       }
     } catch (err) {
       console.error('Placement test error:', err);
+      const errMsg = err.response?.data?.message || 'Có lỗi xảy ra khi chấm bài test. Vui lòng thử lại!';
       setAlertModal({
         isOpen: true,
-        title: 'Có Lỗi Xảy Ra',
-        message: 'Có lỗi xảy ra khi chấm bài test. Vui lòng thử lại!',
-        type: 'danger'
+        title: 'Cảnh Báo Bài Làm',
+        message: errMsg,
+        type: 'warning'
       });
       setSubmitting(false);
     }

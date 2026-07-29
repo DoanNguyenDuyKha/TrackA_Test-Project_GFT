@@ -110,11 +110,12 @@ const Workspace = () => {
       }
     } catch (err) {
       console.error('Error submitting essay:', err);
+      const errMsg = err.response?.data?.message || 'Có lỗi xảy ra trong quá trình chấm bài AI. Vui lòng thử lại!';
       setAlertModal({
         isOpen: true,
-        title: 'Có Lỗi Xảy Ra',
-        message: 'Có lỗi xảy ra trong quá trình chấm bài AI. Vui lòng thử lại!',
-        type: 'danger'
+        title: 'Cảnh Báo Bài Làm',
+        message: errMsg,
+        type: 'warning'
       });
     } finally {
       setSubmitting(false);
