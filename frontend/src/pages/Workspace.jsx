@@ -8,7 +8,7 @@ import AdminConfirmModal from '../components/AdminConfirmModal';
 const Workspace = () => {
   const { id } = useParams(); // Assignment ID
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateUserGroup } = useAuth();
 
   const [assignment, setAssignment] = useState(null);
   const [studentAnswers, setStudentAnswers] = useState('');
@@ -121,12 +121,20 @@ const Workspace = () => {
 
       if (res.data.success) {
         const submissionId = res.data.data.submission._id;
+        const promoted = res.data.data.promoted || false;
+        const newGroup = res.data.data.newGroup || null;
+
+        // ✅ Cập nhật nhóm ngay lập tức tại Workspace khi học viên đạt bài Chuyển Cấp
+        if (isPromotionTest && promoted && newGroup) {
+          updateUserGroup(newGroup);
+        }
+
         navigate(`/results/${submissionId}`, {
           state: {
             submissionData: res.data.data,
             isPromotionTest,
-            promoted: res.data.data.promoted || false,
-            newGroup: res.data.data.newGroup || null
+            promoted,
+            newGroup
           }
         });
       }

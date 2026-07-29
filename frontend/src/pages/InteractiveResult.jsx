@@ -45,16 +45,14 @@ const InteractiveResult = () => {
     }
   }, [id, submission]);
 
-  // Cập nhật lại Auth Context nếu có sự di chuyển nhóm năng lực (Level Migration)
+  // Cập nhật lại Auth Context nếu có sự di chuyển nhóm năng lực (Level Migration tự động từ bài thường)
   useEffect(() => {
     if (adaptiveRouting?.groupMigrated && adaptiveRouting?.currentGroup) {
       updateUserGroup(adaptiveRouting.currentGroup);
     }
-    // Cập nhật nhóm khi vừa thi Chuyển Cấp thành công
-    if (promoted && newGroup) {
-      updateUserGroup(newGroup);
-    }
-  }, [adaptiveRouting, promoted, newGroup, updateUserGroup]);
+    // Nhóm khi Chuyển Cấp đã được cập nhật ngay trong Workspace.jsx trước khi navigate
+    // → Không cần updateUserGroup lại ở đây để tránh race condition
+  }, [adaptiveRouting, updateUserGroup]);
 
   if (loading) {
     return (
