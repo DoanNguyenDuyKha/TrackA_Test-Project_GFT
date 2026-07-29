@@ -34,29 +34,50 @@ function fallbackGrading(studentAnswers, assignment) {
     }
   });
 
-  // Đánh giá dựa trên độ dài từ vựng & cấu trúc
-  if (wordCount >= 220 && academicWordCount >= 6) {
+  // Đếm lỗi chính tả / từ vựng đơn giản (từ ngắn dưới 5 ký tự)
+  let simpleWordCount = 0;
+  words.forEach(w => {
+    const cleanWord = w.toLowerCase().replace(/[^a-z]/g, '');
+    if (cleanWord.length <= 4) {
+      simpleWordCount++;
+    }
+  });
+
+  let overallBand = 5.0;
+
+  // Đánh giá dải điểm chuẩn theo độ dài, từ vựng và cấu trúc
+  if (wordCount >= 250 && academicWordCount >= 10) {
     overallBand = 8.0;
-  } else if (wordCount >= 180 && academicWordCount >= 4) {
+  } else if (wordCount >= 220 && academicWordCount >= 6) {
     overallBand = 7.5;
-  } else if (wordCount >= 150 && academicWordCount >= 2) {
+  } else if (wordCount >= 180 && academicWordCount >= 4) {
     overallBand = 7.0;
-  } else if (wordCount >= 120) {
+  } else if (wordCount >= 150 && academicWordCount >= 2) {
     overallBand = 6.5;
-  } else if (wordCount >= 80) {
+  } else if (wordCount >= 120) {
     overallBand = 6.0;
+  } else if (wordCount >= 80) {
+    overallBand = 5.0;
+  } else if (wordCount >= 40) {
+    overallBand = 4.0;
   } else {
-    overallBand = 5.5;
+    overallBand = 3.0;
+  }
+
+  // Nếu tỷ lệ từ đơn giản / lặp lại quá cao thì hạ band điểm
+  if (wordCount > 0 && (simpleWordCount / wordCount) > 0.65 && academicWordCount < 3) {
+    overallBand = Math.max(3.0, overallBand - 1.5);
   }
 
   // Tính điểm 4 tiêu chí chuẩn
-  const trScore = Math.min(9.0, overallBand + (wordCount >= 200 ? 0.5 : 0));
+  const trScore = Math.max(3.0, Math.min(9.0, overallBand + (wordCount >= 250 ? 0.5 : (wordCount < 100 ? -1.0 : 0))));
   const ccScore = overallBand;
-  const lrScore = Math.min(9.0, overallBand + (academicWordCount >= 5 ? 0.5 : 0));
+  const lrScore = Math.max(3.0, Math.min(9.0, overallBand + (academicWordCount >= 8 ? 0.5 : (academicWordCount < 2 ? -1.0 : 0))));
   const graScore = overallBand;
 
   // Tính lại điểm Overall Band trung bình cộng chuẩn Cambridge
   const calculatedOverall = Math.round(((trScore + ccScore + lrScore + graScore) / 4) * 2) / 2;
+
 
 
   return {
