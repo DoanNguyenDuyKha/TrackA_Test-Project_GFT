@@ -24,6 +24,19 @@ const RubricSchema = new mongoose.Schema({
 
 const Rubric = mongoose.models.Rubric || mongoose.model('Rubric', RubricSchema);
 
+// Schema lưu lịch sử các phiên bản Rubric cũ — snapshot trước mỗi lần chỉnh sửa
+const RubricHistorySchema = new mongoose.Schema({
+  criterionKey: { type: String, required: true },
+  name: { type: String },
+  description: { type: String },
+  bands: { type: mongoose.Schema.Types.Mixed },
+  coachNotes: { type: mongoose.Schema.Types.Mixed },
+  savedAt: { type: Date, default: Date.now }, // thời điểm snapshot được tạo (trước khi ghi đè)
+  savedBy: { type: String, default: 'admin' } // email admin đã thực hiện thay đổi
+});
+
+const RubricHistory = mongoose.models.RubricHistory || mongoose.model('RubricHistory', RubricHistorySchema);
+
 // Dữ liệu Rubric mặc định chuẩn IELTS Task 2 Band Descriptors
 const DEFAULT_RUBRICS = {
   TR: {
