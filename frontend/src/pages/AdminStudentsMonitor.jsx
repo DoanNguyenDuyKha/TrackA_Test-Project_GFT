@@ -160,11 +160,12 @@ const AdminStudentsMonitor = () => {
   const handleDeleteStudentPermanently = (student) => {
     setConfirmModal({
       isOpen: true,
-      title: '⚠️ Xác Nhận Xóa Hoàn Toàn Học Viên',
+      title: 'Xác Nhận Xóa Hoàn Toàn Học Viên',
       message: `Bạn có chắc chắn muốn xóa vĩnh viễn học viên "${student.name.toUpperCase()}"? Hành động này sẽ xóa toàn bộ tài khoản và tất cả bài nộp trong hệ thống mà không bị ràng buộc bởi bất kỳ khóa chính/khóa ngoại nào!`,
       type: 'danger',
-      confirmText: 'Xóa Hoàn Toàn 🗑️',
+      confirmText: 'Xóa Hoàn Toàn',
       onConfirm: async () => {
+
         try {
           const res = await api.delete(`/auth/users/${student._id}`);
           if (res.data.success) {
@@ -491,7 +492,7 @@ const AdminStudentsMonitor = () => {
                     type="submit"
                     className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md transition"
                   >
-                    Lưu Thay Đổi 💾
+                    Lưu Thay Đổi
                   </button>
                 </div>
               </form>

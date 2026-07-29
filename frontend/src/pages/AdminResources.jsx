@@ -148,7 +148,7 @@ const AdminResources = () => {
       title: 'Xác Nhận Xóa Tài Liệu',
       message: 'Bạn có chắc chắn muốn xóa tài liệu này khỏi Kho lưu trữ Admin?',
       type: 'danger',
-      confirmText: 'Xóa Khỏi Kho 🗑️',
+      confirmText: 'Xóa Khỏi Kho',
       onConfirm: async () => {
         try {
           const res = await api.delete(`/resources/${id}`);

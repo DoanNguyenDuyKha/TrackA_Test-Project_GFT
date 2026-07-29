@@ -204,7 +204,7 @@ const AdminAssignments = () => {
       title: 'Xác Nhận Xóa Đề Thi',
       message: 'Bạn có chắc chắn muốn xóa hoàn toàn đề thi này khỏi hệ thống?',
       type: 'danger',
-      confirmText: 'Xóa Vĩnh Viễn 🗑️',
+      confirmText: 'Xóa Vĩnh Viễn',
       onConfirm: async () => {
         try {
           const res = await api.delete(`/assignments/${id}`);
