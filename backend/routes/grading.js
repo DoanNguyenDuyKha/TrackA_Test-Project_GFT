@@ -48,17 +48,20 @@ function fallbackGrading(studentAnswers, assignment) {
     overallBand = 3.0;
   } else if (wordCount >= 250 && academicWordCount >= 8 && wordDiversityRatio >= 0.55) {
     overallBand = 8.0;
-  } else if (wordCount >= 220 && academicWordCount >= 5 && wordDiversityRatio >= 0.50) {
+  } else if (wordCount >= 220 && academicWordCount >= 6 && wordDiversityRatio >= 0.50) {
     overallBand = 7.5;
-  } else if (wordCount >= 180 && academicWordCount >= 3 && wordDiversityRatio >= 0.45) {
+  } else if (wordCount >= 200 && academicWordCount >= 4 && wordDiversityRatio >= 0.48) {
     overallBand = 7.0;
-  } else if (wordCount >= 150 && academicWordCount >= 1) {
+  } else if (wordCount >= 180 && academicWordCount >= 2 && wordDiversityRatio >= 0.45) {
     overallBand = 6.5;
-  } else if (wordCount >= 100) {
+  } else if (wordCount >= 150 && academicWordCount >= 1 && wordDiversityRatio >= 0.40) {
     overallBand = 6.0;
+  } else if (wordCount >= 100) {
+    overallBand = 5.5;
   } else {
     overallBand = 5.0;
   }
+
 
   // Tính điểm 4 tiêu chí chuẩn
   const trScore = isGibberish ? 3.0 : Math.max(3.0, Math.min(9.0, overallBand + (wordCount >= 250 ? 0.5 : (wordCount < 150 ? -1.0 : 0))));
