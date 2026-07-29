@@ -451,13 +451,59 @@ ${studentAnswers}`;
       advancedVocabularyEnhancements: evaluationResult.advancedVocabularyEnhancements || []
     });
 
-    // Kiểm tra điều kiện đủ làm bài Test nâng hạng (nếu học viên hoàn thành hết các bài tập trong kho của nhóm mình)
-    const totalGroupAssignments = await Assignment.countDocuments({ targetGroup: student.studentGroup });
-    const completedSubmissions = await Submission.find({ studentId }).distinct('assignmentId');
-    const groupAssignmentIds = await Assignment.find({ targetGroup: student.studentGroup }).distinct('_id');
+    // 1. Lấy danh sách đề thi thuộc nhóm năng lực của học viên (không tính các đề AI)
+    const groupAssignments = await Assignment.find({
+      targetGroup: student.studentGroup,
+      title: { $not: /AI Master Exam|Test Code #|Test Route #/i }
+    });
 
-    const completedGroupCount = groupAssignmentIds.filter(id => completedSubmissions.some(subId => subId.toString() === id.toString())).length;
+    const totalGroupAssignments = groupAssignments.length;
+    const requiredBandForGroup = student.studentGroup === 'support' ? 5.5 : (student.studentGroup === 'average' ? 6.5 : 7.5);
+
+    // 2. Lấy tất cả bài nộp của học viên và lọc bài nộp ĐẠT YÊU CẦU DỰA TRÊN ĐIỂM (score >= requiredBandForGroup)
+    const allUserSubmissions = await Submission.find({ studentId });
+    const passedAssignmentIds = new Set();
+
+    allUserSubmissions.forEach(sub => {
+      if (sub.overallBand >= requiredBandForGroup) {
+        const assignId = sub.assignmentId?._id || sub.assignmentId;
+        if (assignId) {
+          passedAssignmentIds.add(assignId.toString());
+        }
+      }
+    });
+
+    const completedGroupCount = groupAssignments.filter(a => passedAssignmentIds.has(a._id.toString())).length;
     const isEligibleForPromotion = totalGroupAssignments > 0 && completedGroupCount >= totalGroupAssignments && student.studentGroup !== 'excellent';
+
+    // 3. Nếu vừa hoàn thành đủ tất cả các bài thi với điểm số đạt chuẩn -> Tự động bắn Thông báo Realtime lên Header của Học viên
+    if (isEligibleForPromotion) {
+      const Notification = require('../models/Notification');
+      const nextGroupLabel = student.studentGroup === 'support' ? 'AVERAGE (6.0 - 7.0 Band)' : 'EXCELLENT (7.5+ Band)';
+      const targetMinBand = student.studentGroup === 'support' ? '6.0' : '7.0';
+
+      const existingNotif = await Notification.findOne({
+        recipientId: studentId,
+        type: 'promotion_unlocked',
+        createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+      });
+
+      if (!existingNotif) {
+        const newNotif = await Notification.create({
+          recipientId: studentId,
+          title: '🎉 CHÚC MỪNG! BẠN ĐÃ MỞ KHÓA BÀI THI CHUYỂN CẤP',
+          message: `Bạn đã đạt điểm số yêu cầu (>= ${requiredBandForGroup} Band) cho toàn bộ ${totalGroupAssignments} bài thi nhóm ${student.studentGroup.toUpperCase()}! Hãy tham gia Bài Thi Chuyển Cấp ngay (cần đạt >= ${targetMinBand} Band) để thăng hạng lên nhóm ${nextGroupLabel}.`,
+          type: 'promotion_unlocked',
+          isRead: false
+        });
+
+        // Push Socket.IO realtime event to student room
+        const io = req.app.get('io');
+        if (io) {
+          io.to(studentId.toString()).emit('new_notification', newNotif);
+        }
+      }
+    }
 
     return res.status(201).json({
       success: true,
@@ -473,6 +519,7 @@ ${studentAnswers}`;
         }
       }
     });
+
 
   } catch (error) {
     console.error('Grading Submit Error:', error);

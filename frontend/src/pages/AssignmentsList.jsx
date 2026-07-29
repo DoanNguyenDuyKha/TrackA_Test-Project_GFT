@@ -71,20 +71,47 @@ const AssignmentsList = () => {
               Danh sách các đề thi được Giáo viên / Admin phân nhóm cho cấp độ <span className="font-bold uppercase text-blue-600">{user?.studentGroup}</span> của bạn.
             </p>
           </div>
-          <div className="flex items-center space-x-2 bg-white px-3.5 py-2 rounded-2xl border border-slate-200 shadow-sm">
-            <Filter className="w-4 h-4 text-blue-600 shrink-0" />
-            <span className="text-xs font-bold text-slate-700">Chế độ hiển thị:</span>
-            <select
-              value={filterMode}
-              onChange={(e) => setFilterMode(e.target.value)}
-              className="text-xs font-black text-blue-600 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-            >
-              <option value="adaptive">Đề Theo Nhóm Năng Lực ({user?.studentGroup?.toUpperCase()})</option>
-              <option value="all">Tất Cả Đề Thi ({assignments.length} Đề)</option>
-            </select>
 
+          <div className="flex flex-wrap items-center gap-3">
+            {/* ĐẶC QUYỀN HỌC VIÊN XUẤT SẮC: NÚT SINH ĐỀ AI KHÓ DỘC BẢN */}
+            {user?.studentGroup === 'excellent' && (
+              <button
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const res = await api.post('/grading/generate-ai-exam').catch(() => api.post('/grading/generate-promotion-prompt'));
+                    if (res && res.data && res.data.success) {
+                      const assignId = res.data.data.assignment._id;
+                      navigate(`/workspace/${assignId}`);
+                    }
+                  } catch (e) {
+                    alert('Có lỗi xảy ra khi sinh đề thi AI!');
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-2xl shadow-md transition transform active:scale-95 flex items-center space-x-1.5"
+              >
+                <Sparkles className="w-4 h-4 text-slate-950 shrink-0" />
+                <span>Yêu Cầu AI Sinh Đề Thi Khó Độc Bản</span>
+              </button>
+            )}
+
+            <div className="flex items-center space-x-2 bg-white px-3.5 py-2 rounded-2xl border border-slate-200 shadow-sm">
+              <Filter className="w-4 h-4 text-blue-600 shrink-0" />
+              <span className="text-xs font-bold text-slate-700">Chế độ hiển thị:</span>
+              <select
+                value={filterMode}
+                onChange={(e) => setFilterMode(e.target.value)}
+                className="text-xs font-black text-blue-600 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                <option value="adaptive">Đề Theo Nhóm Năng Lực ({user?.studentGroup?.toUpperCase()})</option>
+                <option value="all">Tất Cả Đề Thi ({assignments.length} Đề)</option>
+              </select>
+            </div>
           </div>
         </div>
+
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
