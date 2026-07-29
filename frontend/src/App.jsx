@@ -18,6 +18,9 @@ import LecturesList from './pages/LecturesList';
 import AdminAssignments from './pages/AdminAssignments';
 import AdminStudentsMonitor from './pages/AdminStudentsMonitor';
 import AdminDashboard from './pages/AdminDashboard';
+import StudentResources from './pages/StudentResources';
+import StudentResourceDetail from './pages/StudentResourceDetail';
+
 
 const HomeRoute = () => {
   const { user } = useAuth();
@@ -88,8 +91,25 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/student/resources"
+                element={
+                  <ProtectedRoute>
+                    <StudentResources />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/resources/:id"
+                element={
+                  <ProtectedRoute>
+                    <StudentResourceDetail />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Admin Protected Routes */}
+
               <Route
                 path="/admin/assignments"
                 element={

@@ -232,7 +232,18 @@ const Navbar = () => {
                     >
                       Đề Thi Thực Hành
                     </Link>
+                    <Link
+                      to="/student/resources"
+                      className={`px-3.5 py-2 rounded-xl text-sm font-medium transition duration-150 ${
+                        isActive('/student/resources') || location.pathname.startsWith('/student/resources')
+                          ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      Kho Tài Liệu
+                    </Link>
                   </>
+
                 )}
 
                 {isAdmin && (

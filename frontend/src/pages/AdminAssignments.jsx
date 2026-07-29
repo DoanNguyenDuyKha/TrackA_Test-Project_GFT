@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
-import { BookOpen, Plus, Trash2, Edit3, CheckCircle2, Sparkles, Filter, X } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Edit3, CheckCircle2, Sparkles, Filter, X, Eye } from 'lucide-react';
+
 
 const AdminAssignments = () => {
   const [assignments, setAssignments] = useState([]);
@@ -9,6 +10,16 @@ const AdminAssignments = () => {
   const [activeTab, setActiveTab] = useState('general'); // Tab Modal System: 'general' | 'samples' | 'outline'
   const [editMode, setEditMode] = useState(false);
   const [editingAssignmentId, setEditingAssignmentId] = useState(null);
+
+  // View Detail Modal State
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewingAssignment, setViewingAssignment] = useState(null);
+
+  const openViewModal = (item) => {
+    setViewingAssignment(item);
+    setShowViewModal(true);
+  };
+
 
   // Form State: 3 Ô Nhập Bài Mẫu Riêng Cho 3 Nhóm Học Viên (Support, Average, Excellent)
   const [title, setTitle] = useState('');
@@ -263,23 +274,34 @@ const AdminAssignments = () => {
                       </div>
                     </td>
                     <td className="p-4 text-right">
-                      <div className="flex items-center justify-end space-x-1">
+                      <div className="flex items-center justify-end space-x-1.5">
+                        {/* Icon Mắt: Xem Chi Tiết Đề Thi */}
+                        <button
+                          onClick={() => openViewModal(item)}
+                          className="p-2 text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-xl border border-indigo-100 transition"
+                          title="Xem chi tiết đề thi, bài mẫu & dàn ý"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        {/* Icon Sửa: Chỉnh Sửa Đề Thi */}
                         <button
                           onClick={() => openEditModal(item)}
-                          className="p-2 text-slate-500 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition border border-transparent hover:border-indigo-100"
+                          className="p-2 text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-100 transition"
                           title="Sửa đề thi"
                         >
                           <Edit3 className="w-4 h-4" />
                         </button>
+                        {/* Icon Thùng Rác: Xóa Đề Thi */}
                         <button
                           onClick={() => handleDelete(item._id)}
-                          className="p-2 text-slate-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition border border-transparent hover:border-red-100"
+                          className="p-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl border border-red-100 transition"
                           title="Xóa đề thi"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -576,9 +598,94 @@ const AdminAssignments = () => {
             </div>
           </div>
         )}
+
+        {/* Modal Xem Chi Tiết Đề Thi (Icon Mắt) */}
+
+        {showViewModal && viewingAssignment && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+            <div className="bg-white rounded-3xl p-8 max-w-5xl w-full max-h-[90vh] flex flex-col justify-between shadow-2xl space-y-6 border border-slate-200 overflow-hidden no-scrollbar">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                    <Eye className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-800">{viewingAssignment.title}</h3>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 font-bold text-xs rounded-full border border-blue-100">
+                        Topic: {viewingAssignment.topic}
+                      </span>
+                      {getTargetBadge(viewingAssignment.targetGroup)}
+                    </div>
+                  </div>
+                </div>
+
+                <button onClick={() => setShowViewModal(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-6 no-scrollbar pr-1 text-xs">
+                {/* Prompt */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                  <span className="text-xs font-bold text-slate-500 uppercase block mb-1">Đề Bài Luận (Prompt)</span>
+                  <p className="text-sm font-serif italic text-slate-800 leading-relaxed">
+                    "{viewingAssignment.prompt}"
+                  </p>
+                </div>
+
+                {/* 3 Group Sample Answers */}
+                <div className="space-y-3">
+                  <span className="text-xs font-bold text-slate-500 uppercase block">Bài Luận Mẫu Theo 3 Band Thích Ứng</span>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 bg-red-50/50 rounded-2xl border border-red-100">
+                      <span className="font-bold text-red-700 block mb-2">• Band 6.0 (Support)</span>
+                      <p className="text-[11px] text-slate-700 font-normal leading-relaxed whitespace-pre-wrap">
+                        {viewingAssignment.groupSampleAnswers?.support || 'Chưa có bài mẫu'}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100">
+                      <span className="font-bold text-amber-700 block mb-2">• Band 7.0 (Average)</span>
+                      <p className="text-[11px] text-slate-700 font-normal leading-relaxed whitespace-pre-wrap">
+                        {viewingAssignment.groupSampleAnswers?.average || 'Chưa có bài mẫu'}
+                      </p>
+                    </div>
+                    <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                      <span className="font-bold text-emerald-700 block mb-2">• Band 8.5+ (Excellent)</span>
+                      <p className="text-[11px] text-slate-700 font-normal leading-relaxed whitespace-pre-wrap">
+                        {viewingAssignment.groupSampleAnswers?.excellent || viewingAssignment.sampleAnswer || 'Chưa có bài mẫu'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Scaffolding Template */}
+                {viewingAssignment.scaffoldingTemplate && (
+                  <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-2">
+                    <span className="text-xs font-bold text-amber-900 uppercase block">Dàn Ý Scaffolding 4 Phần</span>
+                    <pre className="font-sans text-xs text-slate-800 leading-relaxed whitespace-pre-wrap">
+                      {viewingAssignment.scaffoldingTemplate}
+                    </pre>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowViewModal(false)}
+                  className="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+                >
+                  Đóng Chi Tiết
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default AdminAssignments;
+

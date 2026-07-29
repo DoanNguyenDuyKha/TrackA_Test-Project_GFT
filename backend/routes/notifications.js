@@ -126,4 +126,48 @@ router.post('/send-document', authenticateToken, requireAdmin, async (req, res) 
   }
 });
 
+// GET /api/notifications/my-resources - Lấy danh sách kho tài liệu của học viên hiện tại
+router.get('/my-resources', authenticateToken, async (req, res) => {
+  try {
+    const resources = await Notification.find({
+      recipientId: req.user._id,
+      $or: [
+        { documentUrl: { $ne: '' } },
+        { documentName: { $ne: '' } }
+      ]
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: resources
+    });
+  } catch (error) {
+    console.error('GET My Resources Error:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching student resources', error: error.message });
+  }
+});
+
+// GET /api/notifications/my-resources/:id - Lấy chi tiết 1 tài liệu trong kho của học viên
+router.get('/my-resources/:id', authenticateToken, async (req, res) => {
+  try {
+    const resource = await Notification.findOne({
+      _id: req.params.id,
+      recipientId: req.user._id
+    });
+
+    if (!resource) {
+      return res.status(404).json({ success: false, message: 'Tài liệu không tồn tại hoặc không thuộc quyền truy cập' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: resource
+    });
+  } catch (error) {
+    console.error('GET Single Resource Error:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching resource detail', error: error.message });
+  }
+});
+
 module.exports = router;
+
