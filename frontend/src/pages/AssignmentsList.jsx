@@ -66,22 +66,23 @@ const AssignmentsList = () => {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-800">Đề Thi Thực Hành Thích Ứng</h1>
+            <h1 className="text-2xl font-black text-slate-800">Danh Sách Đề Thi Thực Hành</h1>
             <p className="text-xs text-slate-500 mt-1">
-              Danh sách đề thi được tự động đề xuất dựa theo nhóm năng lực <span className="font-bold uppercase text-blue-600">{user?.studentGroup}</span> của bạn.
+              Danh sách các đề thi được Giáo viên / Admin phân nhóm cho cấp độ <span className="font-bold uppercase text-blue-600">{user?.studentGroup}</span> của bạn.
             </p>
           </div>
           <div className="flex items-center space-x-2 bg-white px-3.5 py-2 rounded-2xl border border-slate-200 shadow-sm">
             <Filter className="w-4 h-4 text-blue-600 shrink-0" />
-            <span className="text-xs font-bold text-slate-700">Chế độ phân loại:</span>
+            <span className="text-xs font-bold text-slate-700">Chế độ hiển thị:</span>
             <select
               value={filterMode}
               onChange={(e) => setFilterMode(e.target.value)}
               className="text-xs font-black text-blue-600 bg-slate-50 border border-slate-200 rounded-xl px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
-              <option value="adaptive">🎯 Thích Ứng Tự Động ({user?.studentGroup?.toUpperCase()})</option>
-              <option value="all">🌐 Tất Cả Đề Thi Hiện Có ({assignments.length} Đề)</option>
+              <option value="adaptive">Đề Theo Nhóm Năng Lực ({user?.studentGroup?.toUpperCase()})</option>
+              <option value="all">Tất Cả Đề Thi ({assignments.length} Đề)</option>
             </select>
+
           </div>
         </div>
 
