@@ -15,7 +15,12 @@ function fallbackGrading(studentAnswers, assignment) {
   const words = studentAnswers.trim().split(/\s+/).filter(Boolean);
   const wordCount = words.length;
 
-  // Đếm các cụm từ vựng học thuật & cấu trúc phức
+  // 1. Kiểm tra văn bản rác / vô nghĩa / lặp từ ngây ngô (Gibberish & Repeated character check)
+  const isGibberish = words.some(w => /(.)\1{4,}/.test(w) || w.length > 25);
+  const uniqueWords = new Set(words.map(w => w.toLowerCase().replace(/[^a-z]/g, ''))).size;
+  const wordDiversityRatio = words.length > 0 ? (uniqueWords / words.length) : 0;
+
+  // Đếm các cụm từ vựng học thuật thực sự xuất hiện trong bài
   const academicKeywords = [
     'disproportionate', 'idolization', 'unmatched', 'prestige', 'rigorous',
     'discipline', 'intellectual', 'astronomical', 'adversity', 'advancement',
@@ -23,91 +28,87 @@ function fallbackGrading(studentAnswers, assignment) {
     'profound', 'consequently', 'furthermore', 'nevertheless', 'unprecedented',
     'proactive', 'foster', 'subsidize', 'deterrent', 'imperative', 'indispensable',
     'substantially', 'alleviate', 'substantial', 'infrastructure', 'collaboration',
-    'furthermore', 'however', 'moreover', 'nonetheless', 'therefore', 'whereas'
+    'however', 'moreover', 'nonetheless', 'therefore', 'whereas', 'significant',
+    'perspective', 'fundamental', 'counterpart', 'implement', 'policy'
   ];
 
   let academicWordCount = 0;
   words.forEach(w => {
     const cleanWord = w.toLowerCase().replace(/[^a-z]/g, '');
-    if (academicKeywords.includes(cleanWord) || cleanWord.length >= 7) {
+    if (academicKeywords.includes(cleanWord)) {
       academicWordCount++;
     }
   });
 
-  // Đếm lỗi chính tả / từ vựng đơn giản (từ ngắn dưới 5 ký tự)
-  let simpleWordCount = 0;
-  words.forEach(w => {
-    const cleanWord = w.toLowerCase().replace(/[^a-z]/g, '');
-    if (cleanWord.length <= 4) {
-      simpleWordCount++;
-    }
-  });
 
   let overallBand = 5.0;
 
-  // Đánh giá dải điểm chuẩn theo độ dài, từ vựng và cấu trúc
-  if (wordCount >= 250 && academicWordCount >= 10) {
-    overallBand = 8.0;
-  } else if (wordCount >= 220 && academicWordCount >= 6) {
-    overallBand = 7.5;
-  } else if (wordCount >= 180 && academicWordCount >= 4) {
-    overallBand = 7.0;
-  } else if (wordCount >= 150 && academicWordCount >= 2) {
-    overallBand = 6.5;
-  } else if (wordCount >= 120) {
-    overallBand = 6.0;
-  } else if (wordCount >= 80) {
-    overallBand = 5.0;
-  } else if (wordCount >= 40) {
-    overallBand = 4.0;
-  } else {
+  // Đánh giá dựa trên độ hợp lệ của từ vựng và cấu trúc
+  if (isGibberish || wordDiversityRatio < 0.35 || wordCount < 60) {
     overallBand = 3.0;
-  }
-
-  // Nếu tỷ lệ từ đơn giản / lặp lại quá cao thì hạ band điểm
-  if (wordCount > 0 && (simpleWordCount / wordCount) > 0.65 && academicWordCount < 3) {
-    overallBand = Math.max(3.0, overallBand - 1.5);
+  } else if (wordCount >= 250 && academicWordCount >= 8 && wordDiversityRatio >= 0.55) {
+    overallBand = 8.0;
+  } else if (wordCount >= 220 && academicWordCount >= 5 && wordDiversityRatio >= 0.50) {
+    overallBand = 7.5;
+  } else if (wordCount >= 180 && academicWordCount >= 3 && wordDiversityRatio >= 0.45) {
+    overallBand = 7.0;
+  } else if (wordCount >= 150 && academicWordCount >= 1) {
+    overallBand = 6.5;
+  } else if (wordCount >= 100) {
+    overallBand = 6.0;
+  } else {
+    overallBand = 5.0;
   }
 
   // Tính điểm 4 tiêu chí chuẩn
-  const trScore = Math.max(3.0, Math.min(9.0, overallBand + (wordCount >= 250 ? 0.5 : (wordCount < 100 ? -1.0 : 0))));
-  const ccScore = overallBand;
-  const lrScore = Math.max(3.0, Math.min(9.0, overallBand + (academicWordCount >= 8 ? 0.5 : (academicWordCount < 2 ? -1.0 : 0))));
-  const graScore = overallBand;
+  const trScore = isGibberish ? 3.0 : Math.max(3.0, Math.min(9.0, overallBand + (wordCount >= 250 ? 0.5 : (wordCount < 150 ? -1.0 : 0))));
+  const ccScore = isGibberish ? 3.0 : Math.max(3.0, Math.min(9.0, overallBand + (wordDiversityRatio < 0.4 ? -1.0 : 0)));
+  const lrScore = isGibberish ? 3.0 : Math.max(3.0, Math.min(9.0, overallBand + (academicWordCount >= 5 ? 0.5 : (academicWordCount < 2 ? -1.0 : 0))));
+  const graScore = isGibberish ? 3.0 : overallBand;
 
   // Tính lại điểm Overall Band trung bình cộng chuẩn Cambridge
   const calculatedOverall = Math.round(((trScore + ccScore + lrScore + graScore) / 4) * 2) / 2;
 
+  // Phản hồi nhận xét linh hoạt chuẩn xác theo mức điểm thực tế
+  let trFeedback = `Bài làm đạt ${wordCount} từ. Đã giải quyết cơ bản các yêu cầu của đề bài.`;
+  let ccFeedback = 'Bố cục bài viết được phân chia tương đối rõ ràng giữa các phần.';
+  let lrFeedback = `Bài làm sử dụng ${academicWordCount} từ vựng học thuật chuyên sâu.`;
+  let graFeedback = 'Đã có nỗ lực áp dụng một số cấu trúc câu phức trong bài.';
 
+  if (calculatedOverall <= 4.0) {
+    trFeedback = `Bài viết quá ngắn (${wordCount} từ) hoặc chứa chuỗi từ lặp lại vô nghĩa. Chưa đáp ứng yêu cầu đề bài.`;
+    ccFeedback = 'Ý tưởng rời rạc, chưa có liên kết đoạn văn và thiếu phương tiện nối phù hợp.';
+    lrFeedback = 'Vốn từ vựng rất hạn chế, nhiều từ bị lặp hoặc mắc lỗi chính tả nghiêm trọng.';
+    graFeedback = 'Thường xuyên mắc lỗi cấu trúc câu cơ bản, thiếu sự đa dạng về ngữ pháp.';
+  } else if (calculatedOverall <= 6.0) {
+    trFeedback = `Bài làm đạt ${wordCount} từ. Đã nêu được quan điểm nhưng các luận điểm và ví dụ chưa được phát triển sâu.`;
+    ccFeedback = 'Đã có phân chia đoạn văn nhưng việc sử dụng từ nối còn gượng ép hoặc lặp lại.';
+    lrFeedback = 'Sử dụng vốn từ vựng đủ dùng cho chủ đề, tuy nhiên còn lặp từ và ít từ vựng nâng cao.';
+    graFeedback = 'Đa số sử dụng câu đơn hoặc câu ghép cơ bản, còn xuất hiện một số lỗi ngữ pháp.';
+  } else if (calculatedOverall >= 7.5) {
+    trFeedback = `Bài làm xuất sắc (${wordCount} từ). Giải quyết trọn vẹn và sâu sắc tất cả các khía cạnh của đề bài kèm ví dụ minh họa thuyết phục.`;
+    ccFeedback = 'Bố cục bài luận mạch lạc tuyệt đối, sử dụng phương tiện nối tự nhiên và mượt mà.';
+    lrFeedback = `Sử dụng vốn từ phong phú (${academicWordCount} collocations học thuật), phối hợp từ vựng chuẩn xác và tự nhiên.`;
+    graFeedback = 'Sử dụng thành thạo và đa dạng các cấu trúc câu phức với độ chính xác cao.';
+  }
 
   return {
     overallBand: calculatedOverall,
     criteriaScores: {
-      TR: {
-        score: trScore,
-        feedback: `Bài làm đạt ${wordCount} từ. Đã giải quyết đầy đủ và nhất quán các luận điểm của đề bài.`
-      },
-      CC: {
-        score: ccScore,
-        feedback: 'Bố cục bài luận được chia đoạn mạch lạc, liên kết giữa các câu bằng phương tiện nối tự nhiên.'
-      },
-      LR: {
-        score: lrScore,
-        feedback: `Bài làm áp dụng ${academicWordCount} từ vựng/collocations học thuật phong phú, đa dạng vốn từ.`
-      },
-      GRA: {
-        score: graScore,
-        feedback: 'Sử dụng thành thạo các cấu trúc câu phức, duy trì độ chính xác cao trong bài luận.'
-      }
+      TR: { score: trScore, feedback: trFeedback },
+      CC: { score: ccScore, feedback: ccFeedback },
+      LR: { score: lrScore, feedback: lrFeedback },
+      GRA: { score: graScore, feedback: graFeedback }
     },
-    detailedCorrections: [
+    detailedCorrections: isGibberish ? [
       {
-        original: 'Gợi ý nâng band:',
-        corrected: 'Tăng cường áp dụng thêm các collocations chuyên sâu',
-        explanation: 'Việc kết hợp collocations giúp bài viết đạt mốc Band 8.5+ trọn vẹn.'
+        original: words[0] || 'Từ sai',
+        corrected: 'Cần viết bài luận tiếng Anh hoàn chỉnh',
+        explanation: 'Bài làm chứa chuỗi ký tự lặp lại vô nghĩa. Hãy viết câu hoàn chỉnh theo yêu cầu đề thi.'
       }
-    ]
+    ] : []
   };
+
 }
 
 // POST /api/grading/generate-promotion-prompt - API Sinh đề thi nâng hạng & Đề thi AI Độc Bản cho Học Viên Xuất Sắc
