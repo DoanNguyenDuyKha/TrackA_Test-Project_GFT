@@ -268,13 +268,16 @@ const Navbar = () => {
                     >
                       Giám Sát Học Viên
                     </Link>
-                    <button
-                      onClick={() => setShowSendDocModal(true)}
-                      className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition flex items-center space-x-1.5 ml-2"
+                    <Link
+                      to="/admin/resources"
+                      className={`px-3.5 py-2 rounded-xl text-sm font-medium transition duration-150 ${
+                        isActive('/admin/resources')
+                          ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Gửi Tài Liệu Realtime</span>
-                    </button>
+                      Kho Tài Liệu Admin
+                    </Link>
                   </>
                 )}
               </div>

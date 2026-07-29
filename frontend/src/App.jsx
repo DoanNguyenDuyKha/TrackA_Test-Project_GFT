@@ -18,7 +18,9 @@ import LecturesList from './pages/LecturesList';
 import AdminAssignments from './pages/AdminAssignments';
 import AdminStudentsMonitor from './pages/AdminStudentsMonitor';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminResources from './pages/AdminResources';
 import StudentResources from './pages/StudentResources';
+
 import StudentResourceDetail from './pages/StudentResourceDetail';
 
 
@@ -126,7 +128,16 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/admin/resources"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminResources />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
+
           </main>
         </div>
       </Router>

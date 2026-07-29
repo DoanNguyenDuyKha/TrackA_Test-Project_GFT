@@ -78,6 +78,7 @@ app.use('/api/submissions', submissionRoutes);
 app.use('/api/grading', gradingRoutes);
 app.use('/api/assignments', adaptiveSampleRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/resources', resourceRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
