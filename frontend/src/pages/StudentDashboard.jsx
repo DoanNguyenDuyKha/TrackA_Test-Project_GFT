@@ -20,12 +20,16 @@ const StudentDashboard = () => {
   const [weakestCriterion, setWeakestCriterion] = useState(null);
 
 
+  // Promotion Status State
+  const [promotionStatus, setPromotionStatus] = useState({ isEligible: false, completedCount: 0, totalCount: 0 });
+
   useEffect(() => {
     const fetchStudentDashboard = async () => {
       try {
-        const [subRes, lecRes] = await Promise.all([
+        const [subRes, lecRes, assignRes] = await Promise.all([
           api.get('/submissions'),
-          api.get('/lectures')
+          api.get('/lectures'),
+          api.get('/assignments')
         ]);
 
         let userSubs = [];
@@ -34,11 +38,25 @@ const StudentDashboard = () => {
           setSubmissions(userSubs);
         }
 
+        // Tính toán tiến độ làm hết toàn bộ đề thi của nhóm hiện tại
+        if (assignRes.data.success && user.role === 'student' && user.studentGroup !== 'excellent') {
+          const groupAssignments = assignRes.data.data.filter(a => a.targetGroup === user.studentGroup);
+          const completedIds = userSubs.map(s => s.assignmentId?._id || s.assignmentId);
+          const completedGroupAssignments = groupAssignments.filter(a => completedIds.includes(a._id));
+
+          const totalCount = groupAssignments.length;
+          const completedCount = completedGroupAssignments.length;
+          const isEligible = totalCount > 0 && completedCount >= totalCount;
+
+          setPromotionStatus({ isEligible, completedCount, totalCount });
+        }
+
         // Nếu là học viên mới chưa phân loại (chỉ riêng nhóm support và chưa có bài nộp nào) -> Chuyển đến bài Placement Test
         if (user.role === 'student' && userSubs.length === 0 && (!user.studentGroup || user.studentGroup === 'support')) {
           navigate('/placement-test');
           return;
         }
+
 
         let allLectures = [];
         if (lecRes.data.success) {
@@ -131,6 +149,59 @@ const StudentDashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* PROMOTION EXAM BANNER FOR SUPPORT & AVERAGE STUDENTS */}
+        {user?.studentGroup !== 'excellent' && (
+          <div className={`rounded-3xl p-6 sm:p-8 shadow-xl border flex flex-wrap items-center justify-between gap-6 ${promotionStatus.isEligible ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-700 text-white border-emerald-400/40' : 'bg-white text-slate-800 border-slate-200'}`}>
+            <div className="space-y-2 max-w-2xl">
+              <div className="flex items-center space-x-2">
+                <span className={`px-3 py-1 text-xs font-black rounded-full uppercase tracking-wider ${promotionStatus.isEligible ? 'bg-yellow-400 text-slate-950 animate-pulse' : 'bg-slate-100 text-slate-600'}`}>
+                  {promotionStatus.isEligible ? 'MỞ KHÓA BÀI THI CHUYỂN CẤP!' : 'ĐIỀU KIỆN THĂNG HẠNG'}
+                </span>
+                <span className="text-xs font-bold opacity-80">
+                  (Tiến độ hoàn thành: {promotionStatus.completedCount}/{promotionStatus.totalCount} đề trong nhóm {user?.studentGroup?.toUpperCase()})
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black">
+                {promotionStatus.isEligible ? `Bạn Đã Hoàn Thành Hết Bài Thi Nhóm ${user?.studentGroup?.toUpperCase()}!` : `Hoàn Thành Hết Đề Thi Nhóm ${user?.studentGroup?.toUpperCase()} Để Mở Bài Thi Chuyển Cấp`}
+              </h2>
+              <p className={`text-xs sm:text-sm leading-relaxed ${promotionStatus.isEligible ? 'text-emerald-100' : 'text-slate-500'}`}>
+                {promotionStatus.isEligible
+                  ? `Hãy tham gia Bài Thi Chuyển Cấp ngay. Đạt tối thiểu ${user?.studentGroup === 'support' ? '6.0 Band' : '7.0 Band'} để chính thức thăng hạng lên nhóm ${user?.studentGroup === 'support' ? 'AVERAGE' : 'EXCELLENT'}!`
+                  : `Bạn cần làm xong tất cả ${promotionStatus.totalCount} bài thi thực hành dành cho cấp độ ${user?.studentGroup?.toUpperCase()} để xuất hiện Bài Thi Chuyển Cấp.`}
+              </p>
+            </div>
+
+            {promotionStatus.isEligible && (
+              <button
+                onClick={async () => {
+                  setLoading(true);
+                  try {
+                    const res = await api.post('/grading/generate-promotion-prompt');
+                    if (res && res.data && res.data.success) {
+                      const assignId = res.data.data.assignment._id;
+                      navigate(`/workspace/${assignId}`);
+                    }
+                  } catch (e) {
+                    setAlertModal({
+                      isOpen: true,
+                      title: 'Lỗi Sinh Đề Chuyển Cấp',
+                      message: 'Có lỗi xảy ra khi khởi tạo Đề thi chuyển cấp. Vui lòng thử lại!',
+                      type: 'danger'
+                    });
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="px-7 py-4 bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-sm rounded-2xl shadow-xl transition transform active:scale-95 flex items-center space-x-2 shrink-0"
+              >
+                <Sparkles className="w-5 h-5 text-slate-950" />
+                <span>Bắt Đầu Làm Bài Thi Chuyển Cấp</span>
+              </button>
+            )}
+          </div>
+        )}
+
 
         {/* SPECIAL FEATURE FOR EXCELLENT STUDENTS: AI MASTER EXAM GENERATOR */}
         {user?.studentGroup === 'excellent' && (

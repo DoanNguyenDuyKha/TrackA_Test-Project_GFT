@@ -451,20 +451,13 @@ ${studentAnswers}`;
       advancedVocabularyEnhancements: evaluationResult.advancedVocabularyEnhancements || []
     });
 
-    // Kiểm tra điều kiện đủ xét duyệt làm bài Test nâng hạng
-    const recentSubmissions = await Submission.find({ studentId })
-      .sort({ submittedAt: -1 })
-      .limit(3);
+    // Kiểm tra điều kiện đủ làm bài Test nâng hạng (nếu học viên hoàn thành hết các bài tập trong kho của nhóm mình)
+    const totalGroupAssignments = await Assignment.countDocuments({ targetGroup: student.studentGroup });
+    const completedSubmissions = await Submission.find({ studentId }).distinct('assignmentId');
+    const groupAssignmentIds = await Assignment.find({ targetGroup: student.studentGroup }).distinct('_id');
 
-    const sumBand = recentSubmissions.reduce((acc, sub) => acc + sub.overallBand, 0);
-    const movingAverageBand = sumBand / recentSubmissions.length;
-
-    let isEligibleForPromotion = false;
-    if (student.studentGroup === 'support' && movingAverageBand >= 6.0) {
-      isEligibleForPromotion = true;
-    } else if (student.studentGroup === 'average' && movingAverageBand >= 7.0) {
-      isEligibleForPromotion = true;
-    }
+    const completedGroupCount = groupAssignmentIds.filter(id => completedSubmissions.some(subId => subId.toString() === id.toString())).length;
+    const isEligibleForPromotion = totalGroupAssignments > 0 && completedGroupCount >= totalGroupAssignments && student.studentGroup !== 'excellent';
 
     return res.status(201).json({
       success: true,
@@ -473,11 +466,14 @@ ${studentAnswers}`;
         submission: newSubmission,
         adaptiveRouting: {
           currentGroup: student.studentGroup,
-          movingAverageBand: Number(movingAverageBand.toFixed(2)),
+          groupMigrated: false,
+          totalGroupAssignments,
+          completedGroupCount,
           isEligibleForPromotion
         }
       }
     });
+
   } catch (error) {
     console.error('Grading Submit Error:', error);
     return res.status(500).json({ success: false, message: 'Server error during assignment grading', error: error.message });
