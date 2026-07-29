@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL 
+  ? `${import.meta.env.VITE_API_BASE_URL}/api`
+  : 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -8,6 +10,7 @@ const api = axios.create({
     'Content-Type': 'application/json'
   }
 });
+
 
 // Request Interceptor: Tự động đính kèm token JWT từ localStorage vào Header
 api.interceptors.request.use(
