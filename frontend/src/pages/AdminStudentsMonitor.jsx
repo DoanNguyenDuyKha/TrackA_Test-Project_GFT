@@ -188,8 +188,9 @@ const AdminStudentsMonitor = () => {
         {loading ? (
           <div className="text-center py-12 text-slate-400">Đang tải danh sách học viên...</div>
         ) : (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-            <table className="w-full text-left border-collapse">
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-x-auto table-responsive no-scrollbar">
+            <table className="w-full text-left border-collapse min-w-[900px]">
+
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
                   <th className="p-4">Học viên</th>
