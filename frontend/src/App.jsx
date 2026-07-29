@@ -24,6 +24,8 @@ import AdminResources from './pages/AdminResources';
 import StudentResources from './pages/StudentResources';
 
 import StudentResourceDetail from './pages/StudentResourceDetail';
+import AdminRubricManager from './pages/AdminRubricManager';
+
 
 
 const HomeRoute = () => {
@@ -139,6 +141,15 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/admin/rubrics"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminRubricManager />
+                  </ProtectedRoute>
+                }
+              />
+
             </Routes>
           </main>
           <Footer />

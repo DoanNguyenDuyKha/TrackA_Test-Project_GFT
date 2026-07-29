@@ -287,8 +287,19 @@ const Navbar = () => {
                     >
                       Kho Tài Liệu Admin
                     </Link>
+                    <Link
+                      to="/admin/rubrics"
+                      className={`px-3.5 py-2 rounded-xl text-sm font-medium transition duration-150 ${
+                        isActive('/admin/rubrics')
+                          ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      Quản Lý Rubric
+                    </Link>
                   </>
                 )}
+
               </div>
             )}
 

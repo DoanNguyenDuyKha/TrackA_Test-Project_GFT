@@ -67,13 +67,29 @@ const RUBRIC_DATA = {
 const IELTSWritingRubric = () => {
   const [activeCriterion, setActiveCriterion] = useState('TR');
   const [viewMode, setViewMode] = useState('full'); // 'full' | 'transition'
+  const [rubricData, setRubricData] = useState(RUBRIC_DATA);
 
   // State cho Chế độ Phân Tích Chuyển Band
   const [currentBand, setCurrentBand] = useState(6);
   const [targetBand, setTargetBand] = useState(7);
 
+  React.useEffect(() => {
+    const fetchRubrics = async () => {
+      try {
+        const res = await api.get('/rubrics');
+        if (res.data.success && res.data.data) {
+          setRubricData(res.data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching rubrics:', err);
+      }
+    };
+    fetchRubrics();
+  }, []);
+
   const transitionKey = `${currentBand}-${targetBand}`;
-  const currentCriterionData = RUBRIC_DATA[activeCriterion];
+  const currentCriterionData = rubricData[activeCriterion] || RUBRIC_DATA[activeCriterion];
+
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6">
@@ -117,7 +133,7 @@ const IELTSWritingRubric = () => {
 
       {/* Tabs Chọn Tiêu Chí Chấm */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {Object.keys(RUBRIC_DATA).map((key) => (
+        {Object.keys(rubricData).map((key) => (
           <button
             key={key}
             onClick={() => setActiveCriterion(key)}
@@ -128,10 +144,11 @@ const IELTSWritingRubric = () => {
             }`}
           >
             <div className="text-xs text-slate-400">{key}</div>
-            <div className="text-sm font-extrabold truncate">{RUBRIC_DATA[key].name}</div>
+            <div className="text-sm font-extrabold truncate">{rubricData[key]?.name}</div>
           </button>
         ))}
       </div>
+
 
       {/* Mô tả tiêu chí đang chọn */}
       <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-700 italic">

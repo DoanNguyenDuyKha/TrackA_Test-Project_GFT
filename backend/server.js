@@ -14,8 +14,10 @@ const gradingRoutes = require('./routes/grading');
 const adaptiveSampleRoutes = require('./routes/adaptiveSample');
 const notificationRoutes = require('./routes/notifications');
 const resourceRoutes = require('./routes/resources');
+const rubricRoutes = require('./routes/rubrics');
 
 const app = express();
+
 
 const server = http.createServer(app);
 
@@ -107,6 +109,8 @@ app.use('/api/grading', gradingRoutes);
 app.use('/api/assignments', adaptiveSampleRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/resources', resourceRoutes);
+app.use('/api/rubrics', rubricRoutes);
+
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

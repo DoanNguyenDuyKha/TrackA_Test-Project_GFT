@@ -362,29 +362,25 @@ router.post('/submit', authenticateToken, async (req, res) => {
 
     if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
       try {
+        // Lấy tiêu chí Rubric động mới nhất do Admin cấu hình từ CSDL
+        const { Rubric } = require('./rubrics');
+        let activeRubricDocs = await Rubric.find({});
+        
+        let customRubricInstruction = '';
+        if (activeRubricDocs && activeRubricDocs.length > 0) {
+          customRubricInstruction = activeRubricDocs.map(r => `
+- Tiêu chí ${r.name} (${r.criterionKey}): ${r.description}
+  * Band 8.0: ${r.bands?.[8] || ''}
+  * Band 7.0: ${r.bands?.[7] || ''}
+  * Band 6.0: ${r.bands?.[6] || ''}
+  * Band 5.0: ${r.bands?.[5] || ''}`).join('\n');
+        }
+
         const systemPrompt = `Bạn là một Giám khảo chấm thi IELTS Writing Task 2 chuyên nghiệp của tổ chức IDP và British Council (nghiêm túc, công bằng và tuân thủ 100% tài liệu IELTS Writing Task 2 Official Band Descriptors).
 
-Nhiệm vụ của bạn là phân tích bài làm của học viên và đánh giá CHÍNH XÁC, THỰC TẾ từng tiêu chí theo thang điểm IELTS chuẩn từ 1.0 đến 9.0 dựa trên chất lượng thực sự của bài làm:
+Nhiệm vụ của bạn là phân tích bài làm của học viên và đánh giá CHÍNH XÁC, THỰC TẾ từng tiêu chí theo thang điểm IELTS chuẩn từ 1.0 đến 9.0 dựa trên Tiêu Chí Rubric Đăng Ký Hệ Thống:
+${customRubricInstruction}
 
-1. **Task Achievement / Task Response (TR)**:
-   - Band 8.0+: Trả lời trọn vẹn và sâu sắc tất cả các phần của đề bài, lập luận chặt chẽ, ví dụ cụ thể, dài trên 250 từ.
-   - Band 5.0 - 6.0: Trả lời được đề bài nhưng ý còn sơ sài, thiếu ví dụ hoặc bài chưa đạt 250 từ.
-   - Band 3.0 - 4.0: Bài quá ngắn (dưới 100 từ), lạc đề, hoặc chỉ viết được vài câu chưa hoàn chỉnh.
-
-2. **Coherence and Cohesion (CC)**:
-   - Band 8.0+: Chia đoạn hoàn hảo, liên kết câu/đoạn tự nhiên, mượt mà.
-   - Band 5.0 - 6.0: Có dùng từ nối nhưng còn lặp hoặc gượng ép, chia đoạn chưa hợp lý.
-   - Band 3.0 - 4.0: Thiếu kết nối giữa các câu, ý tưởng rời rạc không logic.
-
-3. **Lexical Resource (LR)**:
-   - Band 8.0+: Vốn từ vựng phong phú, sử dụng chính xác collocations và uncommon words, rất hiếm lỗi chính tả.
-   - Band 5.0 - 6.0: Từ vựng đủ dùng cho chủ đề nhưng chủ yếu là từ đơn giản, lặp từ, mắc một số lỗi dùng từ/chính tả.
-   - Band 3.0 - 4.0: Vốn từ rất hạn chế, mắc lỗi chính tả/từ vựng nghiêm trọng làm cản trở việc hiểu nội dung.
-
-4. **Grammatical Range and Accuracy (GRA)**:
-   - Band 8.0+: Sử dụng thành thạo và đa dạng các cấu trúc câu phức, độ chính xác cao.
-   - Band 5.0 - 6.0: Có cố gắng dùng câu phức nhưng mắc nhiều lỗi ngữ pháp hoặc đa số chỉ đúng ở câu đơn.
-   - Band 3.0 - 4.0: Thường xuyên mắc lỗi ngữ pháp cơ bản (thì, hòa hợp chủ ngữ - động từ, cấu trúc câu).
 
 ⚠️ QUY TẮC ĐÁNH GIÁ CHÂM ĐIỂM:
 - Đánh giá khách quan đúng năng lực thực tế. Nếu bài làm xuất sắc (Band 8.0+), hãy cho điểm 8.0 - 8.5+. Ngược lại, nếu bài viết ngây ngô, kém chất lượng, ngắn hoặc sai ngữ pháp/từ vựng nghiêm trọng (Band 3.0 - 5.0), bạn BẮT BUỘC phải cho điểm thấp tương ứng theo chuẩn Rubric. KHÔNG NÂNG ĐIỂM ẢO!
