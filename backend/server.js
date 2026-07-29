@@ -54,10 +54,16 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://doannguyenduykha08_db_user:Kha.0804@englishadaptivelms.6dtqe9l.mongodb.net/lms_adaptive?appName=EnglishAdaptiveLMS';
 
+const path = require('path');
+
 // --- MIDDLEWARES ---
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Static route cho file upload
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 // --- DATABASE CONNECTION ---
 mongoose.connect(MONGO_URI)

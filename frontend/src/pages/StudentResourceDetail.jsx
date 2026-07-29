@@ -116,14 +116,51 @@ const StudentResourceDetail = () => {
             )}
           </div>
 
-          <div className="flex-1 rounded-2xl bg-slate-100 overflow-hidden flex items-center justify-center p-2 min-h-[550px]">
+          <div className="flex-1 rounded-2xl bg-slate-100 overflow-hidden flex flex-col items-center justify-center p-2 min-h-[550px] relative">
             {resource.documentUrl ? (
               isPdf ? (
-                <iframe
-                  src={resource.documentUrl}
-                  title={resource.documentName || 'PDF Viewer'}
-                  className="w-full h-full min-h-[550px] rounded-xl border-0"
-                ></iframe>
+                <div className="w-full flex-1 flex flex-col min-h-[550px]">
+                  {/* Primary PDF Object viewer with embedded fallback */}
+                  <object
+                    data={resource.documentUrl}
+                    type="application/pdf"
+                    className="w-full h-full min-h-[550px] rounded-xl"
+                  >
+                    <embed
+                      src={resource.documentUrl}
+                      type="application/pdf"
+                      className="w-full h-full min-h-[550px] rounded-xl"
+                    />
+                    <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 space-y-4 my-auto">
+                      <FileText className="w-12 h-12 text-indigo-600 mx-auto" />
+                      <h4 className="text-base font-bold text-slate-800">
+                        {resource.documentName || 'Tài liệu PDF'}
+                      </h4>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        Trình duyệt không tự động xem trước tệp PDF này. Bạn có thể mở trực tiếp hoặc tải về máy tính bên dưới:
+                      </p>
+                      <div className="flex justify-center space-x-3 pt-2">
+                        <a
+                          href={resource.documentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition inline-flex items-center space-x-2"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          <span>Xem Trực Tiếp Trong Tab Mới</span>
+                        </a>
+                        <a
+                          href={resource.documentUrl}
+                          download={resource.documentName || 'tai_lieu.pdf'}
+                          className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition inline-flex items-center space-x-2"
+                        >
+                          <Download className="w-4 h-4" />
+                          <span>Tải Về Máy</span>
+                        </a>
+                      </div>
+                    </div>
+                  </object>
+                </div>
               ) : isImage ? (
                 <div className="max-h-[650px] overflow-auto flex items-center justify-center">
                   <img
@@ -134,7 +171,9 @@ const StudentResourceDetail = () => {
                 </div>
               ) : (
                 <iframe
-                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(resource.documentUrl)}&embedded=true`}
+                  src={resource.documentUrl.startsWith('http') 
+                    ? `https://docs.google.com/viewer?url=${encodeURIComponent(resource.documentUrl)}&embedded=true`
+                    : resource.documentUrl}
                   title="Document Viewer"
                   className="w-full h-full min-h-[550px] rounded-xl border-0"
                 ></iframe>
@@ -142,10 +181,11 @@ const StudentResourceDetail = () => {
             ) : (
               <div className="text-center py-16 space-y-3">
                 <FileText className="w-12 h-12 text-slate-400 mx-auto" />
-                <p className="text-sm font-bold text-slate-600">Tài liệu này không đính kèm tệp tệp tin (Chỉ chứa lời nhắn hướng dẫn phía trên)</p>
+                <p className="text-sm font-bold text-slate-600">Tài liệu này không đính kèm tệp tin (Chỉ chứa lời nhắn hướng dẫn phía trên)</p>
               </div>
             )}
           </div>
+
         </div>
       </div>
     </div>
