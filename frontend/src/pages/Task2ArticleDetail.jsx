@@ -7,6 +7,8 @@ import {
   HelpCircle, ArrowRight, Home, ChevronRight, Volume2, Award, Lightbulb, CheckSquare, Play, Pause, RotateCcw
 } from 'lucide-react';
 
+import AdminConfirmModal from '../components/AdminConfirmModal';
+
 const Task2ArticleDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -14,6 +16,10 @@ const Task2ArticleDetail = () => {
 
   const [assignment, setAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Modal alert state
+  const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '', type: 'warning' });
+
 
   // Adaptive Sample Answer State
   const [adaptiveSample, setAdaptiveSample] = useState('');
@@ -502,12 +508,34 @@ const Task2ArticleDetail = () => {
             </span>
             <h3 className="text-2xl font-black">Bạn Đã Sẵn Sàng Làm Bài Luận Đánh Giá AI?</h3>
             <p className="text-xs sm:text-sm text-blue-100 leading-relaxed">
-              Sau khi học xong dàn ý, từ vựng và bài tập củng cố, hãy chuyển sang giao diện viết bài thi thực hành. Giám khảo AI sẽ lập tức phân tích và chấm điểm bài viết của bạn theo 4 tiêu chí IELTS Task 2.
+              Hãy hoàn thành đúng 100% các câu hỏi bài tập củng cố từ vựng phía trên trước khi chuyển sang phòng thi làm bài luận.
             </p>
           </div>
 
           <button
-            onClick={() => navigate(`/workspace/${assignment._id}`)}
+            onClick={() => {
+              const totalExercises = assignment?.exercises?.length || 0;
+              if (totalExercises > 0) {
+                let correctCount = 0;
+                for (let i = 0; i < totalExercises; i++) {
+                  if (exerciseResults[i] === true) {
+                    correctCount++;
+                  }
+                }
+
+                if (correctCount < totalExercises) {
+                  setAlertModal({
+                    isOpen: true,
+                    title: 'Yêu Cầu Hoàn Thành Bài Tập',
+                    message: `Bạn chưa hoàn thành đúng 100% các bài tập củng cố kiến thức! (Đã đúng ${correctCount}/${totalExercises} câu). Vui lòng làm xong và kiểm tra đúng hết tất cả các câu trước khi vào phòng thi!`,
+                    type: 'warning'
+                  });
+                  return;
+                }
+              }
+
+              navigate(`/workspace/${assignment._id}`);
+            }}
             className="px-8 py-4 bg-white hover:bg-yellow-300 text-slate-900 font-black text-sm rounded-2xl shadow-2xl transition transform active:scale-95 flex items-center space-x-2 shrink-0"
           >
             <span>Vào Viết Bài Thi & Chấm AI</span>
@@ -515,9 +543,21 @@ const Task2ArticleDetail = () => {
           </button>
         </div>
 
+        {/* Modal Popup Cảnh báo Bắt buộc Hoàn thành bài tập */}
+        <AdminConfirmModal
+          isOpen={alertModal.isOpen}
+          onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+          onConfirm={() => setAlertModal({ ...alertModal, isOpen: false })}
+          title={alertModal.title}
+          message={alertModal.message}
+          type={alertModal.type}
+          confirmText="Đã Hiểu"
+        />
+
       </div>
     </div>
   );
 };
 
 export default Task2ArticleDetail;
+
