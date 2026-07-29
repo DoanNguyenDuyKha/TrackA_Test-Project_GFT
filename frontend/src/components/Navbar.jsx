@@ -75,12 +75,15 @@ const Navbar = () => {
       if (!socket) {
         const rawSocketUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         const socketUrl = rawSocketUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+        const isServerless = socketUrl.includes('vercel.app');
+        
         socket = io(socketUrl, {
-          transports: ['websocket', 'polling'],
-          reconnectionAttempts: 3,
-          timeout: 5000
+          autoConnect: !isServerless,
+          transports: ['websocket'],
+          reconnection: false
         });
       }
+
 
 
       if (user.role === 'student') {
