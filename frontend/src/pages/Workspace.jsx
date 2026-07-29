@@ -99,14 +99,36 @@ const Workspace = () => {
 
     setSubmitting(true);
     try {
-      const res = await api.post('/grading/submit', {
-        assignmentId: id,
-        studentAnswers
-      });
+      // Phát hiện Bài Thi Chuyển Cấp dựa trên tiêu đề
+      const isPromotionTest = assignment?.title?.includes('Nâng Hạng') || assignment?.title?.includes('Test Nâng Hạng');
+
+      let res;
+      if (isPromotionTest) {
+        // Xác định nhóm đích dựa trên nhóm hiện tại của học viên
+        const targetNextGroup = user?.studentGroup === 'support' ? 'average' : 'excellent';
+        res = await api.post('/grading/submit-promotion-test', {
+          assignmentId: id,
+          studentAnswers,
+          targetNextGroup
+        });
+      } else {
+        // Bài thực hành thông thường
+        res = await api.post('/grading/submit', {
+          assignmentId: id,
+          studentAnswers
+        });
+      }
 
       if (res.data.success) {
         const submissionId = res.data.data.submission._id;
-        navigate(`/results/${submissionId}`, { state: { submissionData: res.data.data } });
+        navigate(`/results/${submissionId}`, {
+          state: {
+            submissionData: res.data.data,
+            isPromotionTest,
+            promoted: res.data.data.promoted || false,
+            newGroup: res.data.data.newGroup || null
+          }
+        });
       }
     } catch (err) {
       console.error('Error submitting essay:', err);
@@ -121,6 +143,7 @@ const Workspace = () => {
       setSubmitting(false);
     }
   };
+
 
 
   // Chấm bài tập Exercise tương tác trực tiếp

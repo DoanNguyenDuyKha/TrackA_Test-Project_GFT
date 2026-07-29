@@ -450,11 +450,43 @@ ${studentAnswers}`;
       advancedVocabularyEnhancements: evaluationResult.advancedVocabularyEnhancements || []
     });
 
+    // ── Tạo Thông Báo Cho Admin: Học viên vừa nộp bài ──
+    try {
+      const Notification = require('../models/Notification');
+      const admins = await User.find({ role: 'admin' });
+      const adminNotifData = {
+        title: '📩 Bài Nộp Mới Từ Học Viên',
+        message: `Học viên ${student.name} (${student.studentGroup?.toUpperCase()}) vừa nộp bài "${assignment.title}" — Kết quả: ${evaluationResult.overallBand} Band`,
+        type: 'submission_alert',
+        senderId: studentId,
+        senderName: student.name,
+        isRead: false
+      };
+
+      for (const admin of admins) {
+        await Notification.create({ ...adminNotifData, recipientId: admin._id });
+      }
+
+      // Emit socket nếu có (local dev)
+      const io = req.app.get('io');
+      if (io) {
+        io.to('admin_room').emit('admin_submission_alert', {
+          studentName: student.name,
+          studentGroup: student.studentGroup,
+          assignmentTitle: assignment.title,
+          overallBand: evaluationResult.overallBand
+        });
+      }
+    } catch (notifErr) {
+      console.error('Admin notification error (non-critical):', notifErr.message);
+    }
+
     // 1. Lấy danh sách đề thi thuộc nhóm năng lực của học viên (không tính các đề AI)
     const groupAssignments = await Assignment.find({
       targetGroup: student.studentGroup,
-      title: { $not: /AI Master Exam|Test Code #|Test Route #/i }
+      title: { $not: /AI Master Exam|Test Code #|Test Route #|Nâng Hạng/i }
     });
+
 
     const totalGroupAssignments = groupAssignments.length;
     const requiredBandForGroup = student.studentGroup === 'support' ? 5.5 : (student.studentGroup === 'average' ? 6.5 : 7.5);
@@ -594,6 +626,51 @@ router.post('/submit-promotion-test', authenticateToken, async (req, res) => {
       promoted = true;
     }
 
+    // ── Thông báo cho Admin về bài Chuyển Cấp vừa nộp ──
+    try {
+      const Notification = require('../models/Notification');
+      const admins = await User.find({ role: 'admin' });
+      const promoResult = promoted
+        ? `✅ ĐẠT — Đã nâng lên nhóm ${targetNextGroup.toUpperCase()}`
+        : `❌ CHƯA ĐẠT — Vẫn ở nhóm ${student.studentGroup.toUpperCase()}`;
+
+      for (const admin of admins) {
+        await Notification.create({
+          recipientId: admin._id,
+          title: '🏆 Kết Quả Bài Thi Chuyển Cấp',
+          message: `Học viên ${student.name} nộp Bài Thi Chuyển Cấp (${student.studentGroup?.toUpperCase()} ➔ ${targetNextGroup?.toUpperCase()}) — Band: ${evaluationResult.overallBand} — ${promoResult}`,
+          type: 'submission_alert',
+          senderId: studentId,
+          senderName: student.name,
+          isRead: false
+        });
+      }
+
+      // ── Thông báo cho chính học viên về kết quả ──
+      await Notification.create({
+        recipientId: studentId,
+        title: promoted ? '🎉 CHÚC MỪNG! BẠN ĐÃ CHUYỂN CẤP THÀNH CÔNG!' : '📋 Kết Quả Bài Thi Chuyển Cấp',
+        message: promoted
+          ? `Band ${evaluationResult.overallBand} — Bạn đã vượt qua ngưỡng ${requiredBand} Band và được nâng lên nhóm ${targetNextGroup.toUpperCase()}! Vào Dashboard để xem đề thi mới của nhóm bạn.`
+          : `Band ${evaluationResult.overallBand} — Chưa đạt ngưỡng ${requiredBand} Band để chuyển cấp. Hãy luyện tập thêm và thử lại!`,
+        type: 'promotion_unlocked',
+        isRead: false
+      });
+
+      // Emit socket nếu có
+      const io = req.app.get('io');
+      if (io) {
+        io.to('admin_room').emit('admin_submission_alert', {
+          studentName: student.name,
+          studentGroup: student.studentGroup,
+          assignmentTitle: assignment.title,
+          overallBand: evaluationResult.overallBand
+        });
+      }
+    } catch (notifErr) {
+      console.error('Promotion notification error (non-critical):', notifErr.message);
+    }
+
     return res.status(201).json({
       success: true,
       data: {
@@ -604,6 +681,7 @@ router.post('/submit-promotion-test', authenticateToken, async (req, res) => {
         requiredBand
       }
     });
+
   } catch (error) {
     console.error('Submit Promotion Test Error:', error);
     return res.status(500).json({ success: false, message: 'Error grading promotion test', error: error.message });

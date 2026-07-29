@@ -72,19 +72,23 @@ const Navbar = () => {
         fetchStudentsList();
       }
 
+      // ── Polling thông báo mỗi 30 giây (hoạt động cả Vercel serverless) ──
+      const pollingInterval = setInterval(() => {
+        fetchNotifications();
+      }, 30000);
+
+      // ── Socket.IO (chỉ dùng được ở local dev, không dùng trên Vercel) ──
       if (!socket) {
         const rawSocketUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
         const socketUrl = rawSocketUrl.replace(/\/+$/, '').replace(/\/api$/, '');
         const isServerless = socketUrl.includes('vercel.app');
-        
+
         socket = io(socketUrl, {
           autoConnect: !isServerless,
           transports: ['websocket'],
           reconnection: false
         });
       }
-
-
 
       if (user.role === 'student') {
         socket.emit('join_user_room', user._id);
@@ -95,26 +99,21 @@ const Navbar = () => {
       } else if (user.role === 'admin') {
         socket.emit('join_admin_room');
         socket.on('admin_submission_alert', (data) => {
-          const newNotif = {
-            _id: Date.now().toString(),
-            title: '📩 Bài Nộp Mới Từ Học Viên!',
-            message: `Học viên ${data.studentName} (${data.studentGroup?.toUpperCase()}) vừa nộp bài luận "${data.assignmentTitle}" - Kết quả: ${data.overallBand} Band`,
-            createdAt: new Date(),
-            type: 'submission_alert'
-          };
-          setNotifications(prev => [newNotif, ...prev]);
-          setUnreadCount(prev => prev + 1);
+          // Refresh để lấy notification mới từ DB (đã được lưu bởi backend)
+          fetchNotifications();
         });
       }
-    }
 
-    return () => {
-      if (socket) {
-        socket.off('new_notification');
-        socket.off('admin_submission_alert');
-      }
-    };
+      return () => {
+        clearInterval(pollingInterval);
+        if (socket) {
+          socket.off('new_notification');
+          socket.off('admin_submission_alert');
+        }
+      };
+    }
   }, [isAuthenticated, user]);
+
 
   const handleMarkAllRead = async () => {
     try {

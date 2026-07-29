@@ -14,6 +14,11 @@ const InteractiveResult = () => {
   const [adaptiveRouting, setAdaptiveRouting] = useState(location.state?.submissionData?.adaptiveRouting || null);
   const [loading, setLoading] = useState(!submission);
 
+  // Promotion Test state
+  const isPromotionTest = location.state?.isPromotionTest || false;
+  const promoted = location.state?.promoted || false;
+  const newGroup = location.state?.newGroup || null;
+
   // Hover state cho Tooltip Popover bóc tách câu sai
   const [activeCorrection, setActiveCorrection] = useState(null);
   const [popoverPos, setPopoverPos] = useState({ x: 0, y: 0 });
@@ -45,7 +50,11 @@ const InteractiveResult = () => {
     if (adaptiveRouting?.groupMigrated && adaptiveRouting?.currentGroup) {
       updateUserGroup(adaptiveRouting.currentGroup);
     }
-  }, [adaptiveRouting, updateUserGroup]);
+    // Cập nhật nhóm khi vừa thi Chuyển Cấp thành công
+    if (promoted && newGroup) {
+      updateUserGroup(newGroup);
+    }
+  }, [adaptiveRouting, promoted, newGroup, updateUserGroup]);
 
   if (loading) {
     return (
@@ -211,6 +220,46 @@ const InteractiveResult = () => {
             </div>
           </div>
         )}
+
+        {/* ── Kết quả Bài Thi Chuyển Cấp ── */}
+        {isPromotionTest && promoted && newGroup && (
+          <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 text-white rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-emerald-300">
+            <div className="flex items-center space-x-4">
+              <div className="text-5xl animate-bounce">🎉</div>
+              <div>
+                <p className="font-black text-lg sm:text-xl tracking-tight">
+                  CHÚC MỪNG! BẠN ĐÃ VƯỢT QUA BÀI THI CHUYỂN CẤP!
+                </p>
+                <p className="text-sm text-emerald-100 mt-0.5">
+                  Nhóm năng lực của bạn đã được nâng lên <span className="font-extrabold uppercase underline">{newGroup}</span>. Hãy vào Dashboard để xem đề thi mới dành cho nhóm của bạn!
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-5 py-2.5 bg-white text-emerald-700 font-extrabold text-sm rounded-2xl shadow hover:bg-emerald-50 transition shrink-0"
+            >
+              Xem Dashboard Mới →
+            </button>
+          </div>
+        )}
+
+        {isPromotionTest && !promoted && (
+          <div className="bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-3xl p-6 shadow-xl border border-rose-300">
+            <div className="flex items-center space-x-4">
+              <div className="text-4xl">😔</div>
+              <div>
+                <p className="font-black text-base sm:text-lg">
+                  CHƯA ĐẠT YÊU CẦU CHUYỂN CẤP LẦN NÀY
+                </p>
+                <p className="text-sm text-rose-100 mt-0.5">
+                  Điểm bài thi chưa đủ để chuyển cấp. Hãy ôn luyện thêm và thử lại khi sẵn sàng. Bạn có thể xem phần nhận xét bên dưới để cải thiện!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {/* Section 1: Top Hero Card (Overall Score & 4 Criteria Grid) */}
         <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 sm:p-8">
