@@ -73,8 +73,15 @@ const Navbar = () => {
       }
 
       if (!socket) {
-        socket = io(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000');
+        const rawSocketUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const socketUrl = rawSocketUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+        socket = io(socketUrl, {
+          transports: ['websocket', 'polling'],
+          reconnectionAttempts: 3,
+          timeout: 5000
+        });
       }
+
 
       if (user.role === 'student') {
         socket.emit('join_user_room', user._id);
