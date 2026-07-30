@@ -193,6 +193,32 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
 
 
 
+    const fullSuggestedVocab = [
+      { word: 'profound implications', meaning: 'Hệ quả/tác động sâu sắc', collocation: 'have profound implications for society' },
+      { word: 'imperative duty', meaning: 'Nhiệm vụ bắt buộc', collocation: 'regard as an imperative duty' },
+      { word: 'substantially alleviate', meaning: 'Giảm thiểu đáng kể', collocation: 'substantially alleviate the burden' },
+      { word: 'indispensable asset', meaning: 'Tài sản không thể thiếu', collocation: 'an indispensable asset to growth' },
+      { word: 'foster innovation', meaning: 'Thúc đẩy sự đổi mới', collocation: 'foster innovation and progress' },
+      { word: 'deterrent factor', meaning: 'Yếu tố răn đe', collocation: 'act as a strong deterrent factor' },
+      { word: 'ethical dilemma', meaning: 'Tiến thoái lưỡng nan về đạo đức', collocation: 'pose a severe ethical dilemma' },
+      { word: 'unprecedented growth', meaning: 'Sự tăng trưởng chưa từng có', collocation: 'witness unprecedented growth' },
+      { word: 'intellectual resilience', meaning: 'Sự kiên cường trí tuệ', collocation: 'cultivate intellectual resilience' },
+      { word: 'holistic development', meaning: 'Sự phát triển toàn diện', collocation: 'promote holistic development' }
+    ];
+
+    const fullExercises = [
+      { prompt: 'Câu 1: Điền cụm từ vựng học thuật chỉ tác động sâu sắc:', blankSpaceText: 'The technological revolution has had _______ for modern society.', correctAnswer: 'profound implications', explanation: '"profound implications" nghĩa là các tác động/hệ quả sâu sắc.' },
+      { prompt: 'Câu 2: Điền từ chỉ trách nhiệm bắt buộc:', blankSpaceText: 'Protecting global ecosystems is considered an _______ for all governments.', correctAnswer: 'imperative duty', explanation: '"imperative duty" chỉ nghĩa là trách nhiệm/nghĩa vụ bắt buộc.' },
+      { prompt: 'Câu 3: Điền từ chỉ việc giảm nhẹ gánh nặng:', blankSpaceText: 'Renewable energy investment will _______ the dependence on fossil fuels.', correctAnswer: 'substantially alleviate', explanation: '"substantially alleviate" nghĩa là làm giảm nhẹ đáng kể.' },
+      { prompt: 'Câu 4: Điền từ chỉ tài sản vô giá/không thể thiếu:', blankSpaceText: 'Critical thinking skills are an _______ in the modern workplace.', correctAnswer: 'indispensable asset', explanation: '"indispensable asset" là tài sản/kỹ năng không thể thiếu.' },
+      { prompt: 'Câu 5: Điền từ chỉ sự thúc đẩy đổi mới:', blankSpaceText: 'Educational reforms should _______ and creative thinking.', correctAnswer: 'foster innovation', explanation: '"foster innovation" nghĩa là nuôi dưỡng/thúc đẩy đổi mới.' },
+      { prompt: 'Câu 6: Điền từ chỉ yếu tố răn đe:', blankSpaceText: 'Strict laws act as a strong _______ against illegal activities.', correctAnswer: 'deterrent factor', explanation: '"deterrent factor" nghĩa là yếu tố răn đe ngăn chặn.' },
+      { prompt: 'Câu 7: Điền từ chỉ cuộc xung đột đạo đức:', blankSpaceText: 'Genetic engineering often poses a complex _______.', correctAnswer: 'ethical dilemma', explanation: '"ethical dilemma" chỉ tình huống tiến thoái lưỡng nan về đạo đức.' },
+      { prompt: 'Câu 8: Điền từ chỉ sự phát triển chưa từng có:', blankSpaceText: 'The digital economy has experienced _______ over the past decade.', correctAnswer: 'unprecedented growth', explanation: '"unprecedented growth" là tăng trưởng vượt bậc chưa từng thấy.' },
+      { prompt: 'Câu 9: Điền từ chỉ sự kiên cường về mặt trí tuệ:', blankSpaceText: 'Challenging curricula help students build _______.', correctAnswer: 'intellectual resilience', explanation: '"intellectual resilience" là bản lĩnh/sự kiên cường trí tuệ.' },
+      { prompt: 'Câu 10: Điền từ chỉ sự phát triển toàn diện:', blankSpaceText: 'Schools should aim for the _______ of young individuals.', correctAnswer: 'holistic development', explanation: '"holistic development" là sự phát triển toàn diện cả thể chất lẫn trí tuệ.' }
+    ];
+
     const newAssignment = await Assignment.create({
       title: examTitle,
       prompt: promptText,
@@ -266,6 +292,32 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
 
 
 
+
+    const fullSuggestedVocab = [
+      { word: 'profound implications', meaning: 'Hệ quả/tác động sâu sắc', collocation: 'have profound implications for society' },
+      { word: 'imperative duty', meaning: 'Nhiệm vụ bắt buộc', collocation: 'regard as an imperative duty' },
+      { word: 'substantially alleviate', meaning: 'Giảm thiểu đáng kể', collocation: 'substantially alleviate the burden' },
+      { word: 'indispensable asset', meaning: 'Tài sản không thể thiếu', collocation: 'an indispensable asset to growth' },
+      { word: 'foster innovation', meaning: 'Thúc đẩy sự đổi mới', collocation: 'foster innovation and progress' },
+      { word: 'deterrent factor', meaning: 'Yếu tố răn đe', collocation: 'act as a strong deterrent factor' },
+      { word: 'ethical dilemma', meaning: 'Tiến thoái lưỡng nan về đạo đức', collocation: 'pose a severe ethical dilemma' },
+      { word: 'unprecedented growth', meaning: 'Sự tăng trưởng chưa từng có', collocation: 'witness unprecedented growth' },
+      { word: 'intellectual resilience', meaning: 'Sự kiên cường trí tuệ', collocation: 'cultivate intellectual resilience' },
+      { word: 'holistic development', meaning: 'Sự phát triển toàn diện', collocation: 'promote holistic development' }
+    ];
+
+    const fullExercises = [
+      { prompt: 'Câu 1: Điền cụm từ vựng học thuật chỉ tác động sâu sắc:', blankSpaceText: 'The technological revolution has had _______ for modern society.', correctAnswer: 'profound implications', explanation: '"profound implications" nghĩa là các tác động/hệ quả sâu sắc.' },
+      { prompt: 'Câu 2: Điền từ chỉ trách nhiệm bắt buộc:', blankSpaceText: 'Protecting global ecosystems is considered an _______ for all governments.', correctAnswer: 'imperative duty', explanation: '"imperative duty" chỉ nghĩa là trách nhiệm/nghĩa vụ bắt buộc.' },
+      { prompt: 'Câu 3: Điền từ chỉ việc giảm nhẹ gánh nặng:', blankSpaceText: 'Renewable energy investment will _______ the dependence on fossil fuels.', correctAnswer: 'substantially alleviate', explanation: '"substantially alleviate" nghĩa là làm giảm nhẹ đáng kể.' },
+      { prompt: 'Câu 4: Điền từ chỉ tài sản vô giá/không thể thiếu:', blankSpaceText: 'Critical thinking skills are an _______ in the modern workplace.', correctAnswer: 'indispensable asset', explanation: '"indispensable asset" là tài sản/kỹ năng không thể thiếu.' },
+      { prompt: 'Câu 5: Điền từ chỉ sự thúc đẩy đổi mới:', blankSpaceText: 'Educational reforms should _______ and creative thinking.', correctAnswer: 'foster innovation', explanation: '"foster innovation" nghĩa là nuôi dưỡng/thúc đẩy đổi mới.' },
+      { prompt: 'Câu 6: Điền từ chỉ yếu tố răn đe:', blankSpaceText: 'Strict laws act as a strong _______ against illegal activities.', correctAnswer: 'deterrent factor', explanation: '"deterrent factor" nghĩa là yếu tố răn đe ngăn chặn.' },
+      { prompt: 'Câu 7: Điền từ chỉ cuộc xung đột đạo đức:', blankSpaceText: 'Genetic engineering often poses a complex _______.', correctAnswer: 'ethical dilemma', explanation: '"ethical dilemma" chỉ tình huống tiến thoái lưỡng nan về đạo đức.' },
+      { prompt: 'Câu 8: Điền từ chỉ sự phát triển chưa từng có:', blankSpaceText: 'The digital economy has experienced _______ over the past decade.', correctAnswer: 'unprecedented growth', explanation: '"unprecedented growth" là tăng trưởng vượt bậc chưa từng thấy.' },
+      { prompt: 'Câu 9: Điền từ chỉ sự kiên cường về mặt trí tuệ:', blankSpaceText: 'Challenging curricula help students build _______.', correctAnswer: 'intellectual resilience', explanation: '"intellectual resilience" là bản lĩnh/sự kiên cường trí tuệ.' },
+      { prompt: 'Câu 10: Điền từ chỉ sự phát triển toàn diện:', blankSpaceText: 'Schools should aim for the _______ of young individuals.', correctAnswer: 'holistic development', explanation: '"holistic development" là sự phát triển toàn diện cả thể chất lẫn trí tuệ.' }
+    ];
 
     const newAssignment = await Assignment.create({
       title: examTitle,
