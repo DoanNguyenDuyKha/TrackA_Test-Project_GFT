@@ -152,22 +152,6 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
     const studentGroup = req.user.studentGroup || 'support';
     let targetGroup = studentGroup === 'excellent' ? 'excellent' : (studentGroup === 'average' ? 'excellent' : 'average');
 
-    // 🛑 Đảm bảo đối với nhóm Excellent (hoặc khi đã sinh đề), kiểm tra xem người dùng đã từng sinh đề chưa.
-    // Nếu đã có đề thi do AI tạo bởi người dùng này, trả về đúng 1 đề duy nhất thay vì mỗi lần bấm lại sinh ra đề mới.
-    const existingExam = await Assignment.findOne({
-      createdBy: req.user._id,
-      targetGroup: targetGroup
-    }).sort({ createdAt: -1 });
-
-    if (existingExam) {
-      return res.status(200).json({
-        success: true,
-        data: {
-          assignment: existingExam,
-          targetNextGroup: targetGroup
-        }
-      });
-    }
 
     const topics = ['Education', 'Health', 'Art', 'Technology', 'Sport', 'Social Issues', 'Environment'];
     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
@@ -299,21 +283,7 @@ ${promptText}
 // Alias Route: POST /api/grading/generate-ai-exam
 router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
   try {
-    // 🛑 Kiểm tra nếu học viên xuất sắc đã được tạo đề thi AI master rồi thì dùng lại đề cũ đó
-    const existingExam = await Assignment.findOne({
-      createdBy: req.user._id,
-      targetGroup: 'excellent'
-    }).sort({ createdAt: -1 });
 
-    if (existingExam) {
-      return res.status(200).json({
-        success: true,
-        data: {
-          assignment: existingExam,
-          targetNextGroup: 'excellent'
-        }
-      });
-    }
 
     const topics = ['Education', 'Health', 'Art', 'Technology', 'Sport', 'Social Issues', 'Environment'];
     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
