@@ -134,6 +134,12 @@ const AdminAssignments = () => {
 
   const handleSaveAssignment = async (e) => {
     e.preventDefault();
+    // 🛑 Chỉ cho phép lưu đề thi khi đang ở Tab cuối cùng (outline - Bước 3/3)
+    if (activeTab !== 'outline') {
+      setActiveTab(activeTab === 'general' ? 'samples' : 'outline');
+      return;
+    }
+
     try {
       const filteredVocab = suggestedVocab.filter(v => v.word.trim() !== '');
 
