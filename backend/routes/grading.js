@@ -163,7 +163,7 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       ? `AI Master Exam #${uniqueExamId} - Topic ${randomTopic} (Band 8.5+ Challenge)`
       : `Bài Test Nâng Hạng (${studentGroup.toUpperCase()} ➔ ${targetGroup.toUpperCase()})`;
 
-    let promptText = `With the rapid advancement of technology in modern society, some people believe it brings positive opportunities while others argue it creates ethical dilemmas. To what extent do you agree or disagree? (Unique Seed #${timestamp})`;
+    let promptText = `With the rapid advancement of technology in modern society, some people believe it brings positive opportunities while others argue it creates ethical dilemmas. To what extent do you agree or disagree?`;
 
     try {
       const aiRes = await openai.chat.completions.create({
@@ -186,8 +186,9 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       }
     } catch (e) {
       console.error('Error generating AI prompt from OpenAI, using dynamic fallback:', e.message);
-      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society. (ID: #${timestamp})`;
+      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society.`;
     }
+
 
 
 
@@ -263,7 +264,7 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
     const uniqueExamId = Math.floor(Math.random() * 9000 + 1000);
 
     let examTitle = `AI Master Exam #${uniqueExamId} - Topic ${randomTopic} (Band 8.5+ Challenge)`;
-    let promptText = `With the rapid advancement of technology in modern society, some people believe it brings positive opportunities while others argue it creates ethical dilemmas. To what extent do you agree or disagree? (Unique Seed #${timestamp})`;
+    let promptText = `With the rapid advancement of technology in modern society, some people believe it brings positive opportunities while others argue it creates ethical dilemmas. To what extent do you agree or disagree?`;
 
     try {
       const aiRes = await openai.chat.completions.create({
@@ -286,8 +287,9 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
       }
     } catch (e) {
       console.error('Error generating AI prompt from OpenAI in generate-ai-exam:', e.message);
-      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society. (ID: #${timestamp})`;
+      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society.`;
     }
+
 
 
 
