@@ -248,11 +248,11 @@ const AdminAssignments = () => {
   const getTargetBadge = (group) => {
     switch (group) {
       case 'support':
-        return <span className="px-3 py-1 bg-red-100 text-red-700 font-extrabold text-xs rounded-full border border-red-200">CẦN HỖ TRỢ</span>;
+        return <span className="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 font-extrabold text-xs rounded-full border border-red-200 whitespace-nowrap">CẦN HỖ TRỢ</span>;
       case 'average':
-        return <span className="px-3 py-1 bg-amber-100 text-amber-800 font-extrabold text-xs rounded-full border border-amber-200">TRUNG BÌNH</span>;
+        return <span className="inline-flex items-center px-3 py-1 bg-amber-100 text-amber-800 font-extrabold text-xs rounded-full border border-amber-200 whitespace-nowrap">TRUNG BÌNH</span>;
       case 'excellent':
-        return <span className="px-3 py-1 bg-purple-100 text-purple-800 font-extrabold text-xs rounded-full border border-purple-200">XUẤT SẮC</span>;
+        return <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 font-extrabold text-xs rounded-full border border-purple-200 whitespace-nowrap">XUẤT SẮC</span>;
       default:
         return null;
     }
@@ -288,7 +288,7 @@ const AdminAssignments = () => {
                 <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
                   <th className="p-4">Tiêu Đề & Ngày Ra Đề</th>
                   <th className="p-4">Chủ Đề (Topic)</th>
-                  <th className="p-4">Nhóm Học Viên Đích</th>
+                  <th className="p-4 whitespace-nowrap">Nhóm Học Viên Đích</th>
                   <th className="p-4">Nội Dung Đề Bài Luận</th>
                   <th className="p-4 text-center">Cấu Hình Dàn Ý & Bài Mẫu</th>
                   <th className="p-4 text-right">Thao Tác</th>
@@ -302,11 +302,11 @@ const AdminAssignments = () => {
                       <span className="text-[10px] text-slate-400">Tạo: {new Date(item.createdAt).toLocaleDateString('vi-VN')}</span>
                     </td>
                     <td className="p-4">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-full border border-blue-100">
+                      <span className="px-3 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-full border border-blue-100 whitespace-nowrap">
                         {item.topic}
                       </span>
                     </td>
-                    <td className="p-4">{getTargetBadge(item.targetGroup)}</td>
+                    <td className="p-4 whitespace-nowrap">{getTargetBadge(item.targetGroup)}</td>
                     <td className="p-4 max-w-xs">
                       <p className="text-xs text-slate-600 italic line-clamp-2">"{item.prompt}"</p>
                     </td>

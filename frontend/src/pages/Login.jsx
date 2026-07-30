@@ -107,15 +107,6 @@ const Login = () => {
             </p>
           </div>
         </form>
-
-
-        <div className="pt-4 border-t border-slate-100 text-center space-y-2">
-          <p className="text-xs text-slate-500">Tài khoản mặc định để thử nghiệm:</p>
-          <div className="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1 font-mono">
-            <p>Học viên: <span className="font-bold text-blue-600">student@gft.edu.vn</span> / <span className="font-bold">123456</span></p>
-            <p>Admin: <span className="font-bold text-indigo-600">admin@gft.edu.vn</span> / <span className="font-bold">123456</span></p>
-          </div>
-        </div>
       </div>
     </div>
   );
