@@ -131,9 +131,10 @@ router.get('/my-resources', authenticateToken, async (req, res) => {
   try {
     const resources = await Notification.find({
       recipientId: req.user._id,
+      type: 'document_share',
       $or: [
-        { documentUrl: { $ne: '' } },
-        { documentName: { $ne: '' } }
+        { documentUrl: { $exists: true, $ne: '' } },
+        { documentName: { $exists: true, $ne: '' } }
       ]
     }).sort({ createdAt: -1 });
 
