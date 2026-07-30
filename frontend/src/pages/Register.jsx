@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { BookOpen, Lock, Mail, User, Sparkles, CheckCircle2 } from 'lucide-react';
 
 const Register = () => {
@@ -14,6 +15,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const { register } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -38,6 +40,10 @@ const Register = () => {
         targetBand: Number(targetBand),
         isFirstLogin: true
       });
+      
+      // 🔔 Bật Toast tự ẩn góc trên bên phải
+      showToast('🎉 Đăng ký tài khoản thành công! Vui lòng đăng nhập.', 'success', 3500);
+
       // Đăng ký xong quay về trang đăng nhập
       navigate('/login', { state: { registeredMessage: 'Đăng ký tài khoản thành công! Vui lòng đăng nhập để thực hiện bài Test xếp lớp ban đầu.' } });
     } catch (err) {
@@ -47,6 +53,7 @@ const Register = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">

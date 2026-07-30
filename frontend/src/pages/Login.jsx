@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { BookOpen, Lock, Mail, User, Sparkles, CheckCircle2 } from 'lucide-react';
+
 
 const Login = () => {
   const location = useLocation();
@@ -11,6 +13,7 @@ const Login = () => {
   const [registeredMsg, setRegisteredMsg] = useState(location.state?.registeredMessage || '');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -19,7 +22,8 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const loggedUser = await login(email, password);
+      showToast(`🎉 Đăng nhập thành công! Chào mừng ${loggedUser?.name || 'bạn'} quay trở lại.`, 'success', 3000);
       navigate('/');
     } catch (err) {
       console.error('Login error:', err);
@@ -28,6 +32,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">

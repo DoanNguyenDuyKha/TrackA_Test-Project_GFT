@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+
 
 
 // Pages Import
@@ -39,9 +41,11 @@ const HomeRoute = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen flex flex-col bg-slate-50 font-sans antialiased text-slate-900">
-          <Navbar />
+      <ToastProvider>
+        <Router>
+          <div className="min-h-screen flex flex-col bg-slate-50 font-sans antialiased text-slate-900">
+            <Navbar />
+
           <main className="flex-1">
 
             <Routes>
@@ -155,7 +159,9 @@ function App() {
           <Footer />
         </div>
       </Router>
-    </AuthProvider>
+    </ToastProvider>
+  </AuthProvider>
+
   );
 }
 
