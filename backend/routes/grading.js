@@ -150,13 +150,31 @@ function fallbackGrading(studentAnswers, assignment) {
 router.post('/generate-promotion-prompt', authenticateToken, async (req, res) => {
   try {
     const studentGroup = req.user.studentGroup || 'support';
+    let targetGroup = studentGroup === 'excellent' ? 'excellent' : (studentGroup === 'average' ? 'excellent' : 'average');
+
+    // 🛑 Đảm bảo đối với nhóm Excellent (hoặc khi đã sinh đề), kiểm tra xem người dùng đã từng sinh đề chưa.
+    // Nếu đã có đề thi do AI tạo bởi người dùng này, trả về đúng 1 đề duy nhất thay vì mỗi lần bấm lại sinh ra đề mới.
+    const existingExam = await Assignment.findOne({
+      createdBy: req.user._id,
+      targetGroup: targetGroup
+    }).sort({ createdAt: -1 });
+
+    if (existingExam) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          assignment: existingExam,
+          targetNextGroup: targetGroup
+        }
+      });
+    }
+
     const topics = ['Education', 'Health', 'Art', 'Technology', 'Sport', 'Social Issues', 'Environment'];
     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
     const timestamp = new Date().getTime();
     const uniqueExamId = Math.floor(Math.random() * 9000 + 1000);
 
-    let targetGroup = studentGroup === 'excellent' ? 'excellent' : (studentGroup === 'average' ? 'excellent' : 'average');
     let examTitle = studentGroup === 'excellent' 
       ? `AI Master Exam #${uniqueExamId} - Topic ${randomTopic} (Band 8.5+ Challenge)`
       : `Bài Test Nâng Hạng (${studentGroup.toUpperCase()} ➔ ${targetGroup.toUpperCase()})`;
@@ -177,7 +195,7 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
               content: `Hãy sinh 1 đề thi IELTS Writing Task 2 độc bản hoàn toàn mới về chủ đề ${randomTopic} (Mã đề #${timestamp}). Chỉ trả về duy nhất 1 câu đề bài Tiếng Anh.`
             }
           ],
-          temperature: 0.95 // Đảm bảo mỗi lần bấm là 1 đề thi hoàn toàn khác nhau
+          temperature: 0.95
         });
 
         promptText = aiRes.choices[0].message.content.trim();
@@ -248,7 +266,22 @@ ${promptText}
 // Alias Route: POST /api/grading/generate-ai-exam
 router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
   try {
-    const studentGroup = req.user.studentGroup || 'excellent';
+    // 🛑 Kiểm tra nếu học viên xuất sắc đã được tạo đề thi AI master rồi thì dùng lại đề cũ đó
+    const existingExam = await Assignment.findOne({
+      createdBy: req.user._id,
+      targetGroup: 'excellent'
+    }).sort({ createdAt: -1 });
+
+    if (existingExam) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          assignment: existingExam,
+          targetNextGroup: 'excellent'
+        }
+      });
+    }
+
     const topics = ['Education', 'Health', 'Art', 'Technology', 'Sport', 'Social Issues', 'Environment'];
     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
 
@@ -312,6 +345,7 @@ ${promptText}
     return res.status(500).json({ success: false, message: 'Error generating AI exam', error: error.message });
   }
 });
+
 
 // POST /api/grading/submit - API Chấm bài thực hành (Không tự nâng hạng ảo)
 router.post('/submit', authenticateToken, async (req, res) => {
