@@ -186,8 +186,15 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       }
     } catch (e) {
       console.error('Error generating AI prompt from OpenAI, using dynamic fallback:', e.message);
-      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society.`;
+      const dynamicQuestionTypes = [
+        `To what extent do you agree or disagree that recent advancements in ${randomTopic} have more negative impacts on society than positive ones?`,
+        `Some people believe that governments should strictly regulate developments in ${randomTopic}. Others argue for complete freedom. Discuss both views and give your opinion.`,
+        `What are the main causes of challenges related to ${randomTopic} in modern times, and what effective solutions can be implemented to address them?`,
+        `Many people argue that the rapid evolution of ${randomTopic} is altering traditional values. Do the advantages of this trend outweigh the disadvantages?`
+      ];
+      promptText = dynamicQuestionTypes[Math.floor(Math.random() * dynamicQuestionTypes.length)];
     }
+
 
 
 
@@ -287,8 +294,15 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
       }
     } catch (e) {
       console.error('Error generating AI prompt from OpenAI in generate-ai-exam:', e.message);
-      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society.`;
+      const dynamicQuestionTypes = [
+        `To what extent do you agree or disagree that recent advancements in ${randomTopic} have more negative impacts on society than positive ones?`,
+        `Some people believe that governments should strictly regulate developments in ${randomTopic}. Others argue for complete freedom. Discuss both views and give your opinion.`,
+        `What are the main causes of challenges related to ${randomTopic} in modern times, and what effective solutions can be implemented to address them?`,
+        `Many people argue that the rapid evolution of ${randomTopic} is altering traditional values. Do the advantages of this trend outweigh the disadvantages?`
+      ];
+      promptText = dynamicQuestionTypes[Math.floor(Math.random() * dynamicQuestionTypes.length)];
     }
+
 
 
 
