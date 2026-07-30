@@ -6,13 +6,14 @@ const ToastContext = createContext();
 export const ToastProvider = ({ children }) => {
   const [toast, setToast] = useState(null);
 
-  const showToast = useCallback((message, type = 'success', duration = 3000) => {
+  const showToast = useCallback((message, type = 'success', duration = 2000) => {
     setToast({ message, type });
     const timer = setTimeout(() => {
       setToast(null);
     }, duration);
     return () => clearTimeout(timer);
   }, []);
+
 
   const hideToast = () => setToast(null);
 

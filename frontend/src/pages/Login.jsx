@@ -23,8 +23,9 @@ const Login = () => {
 
     try {
       const loggedUser = await login(email, password);
-      showToast(`🎉 Đăng nhập thành công! Chào mừng ${loggedUser?.name || 'bạn'} quay trở lại.`, 'success', 3000);
+      showToast(`🎉 Đăng nhập thành công! Chào mừng ${loggedUser?.name || 'bạn'} quay trở lại.`, 'success', 2000);
       navigate('/');
+
     } catch (err) {
       console.error('Login error:', err);
       setError(err.response?.data?.message || 'Email hoặc mật khẩu không chính xác');

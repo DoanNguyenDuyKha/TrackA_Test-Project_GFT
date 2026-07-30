@@ -41,8 +41,9 @@ const Register = () => {
         isFirstLogin: true
       });
       
-      // 🔔 Bật Toast tự ẩn góc trên bên phải
-      showToast('🎉 Đăng ký tài khoản thành công! Vui lòng đăng nhập.', 'success', 3500);
+      // 🔔 Bật Toast tự ẩn góc trên bên phải sau 2 giây
+      showToast('🎉 Đăng ký tài khoản thành công! Vui lòng đăng nhập.', 'success', 2000);
+
 
       // Đăng ký xong quay về trang đăng nhập
       navigate('/login', { state: { registeredMessage: 'Đăng ký tài khoản thành công! Vui lòng đăng nhập để thực hiện bài Test xếp lớp ban đầu.' } });
