@@ -119,19 +119,20 @@ const AdminRubricManager = () => {
       if (res.data.success) {
         setAlertModal({
           isOpen: true,
-          title: 'Thành Công',
-          message: `Đã cập nhật cấu hình Rubric tiêu chí ${activeTab} thành công! AI sẽ áp dụng quy tắc mới này ngay lập tức khi chấm bài.`,
+          title: 'Cập Nhật Rubric Thành Công',
+          message: `Cấu hình Rubric cho tiêu chí ${activeTab} (${formData.name || activeTab}) đã được cập nhật thành công! AI Chấm điểm GPT-4o sẽ áp dụng trực tiếp quy tắc Rubric mới này ngay lập tức.`,
           type: 'success'
         });
         fetchRubrics();
         setPageMode('view');
       }
     } catch (err) {
-      setAlertModal({ isOpen: true, title: 'Lỗi Cập Nhật', message: 'Có lỗi xảy ra khi lưu cấu hình Rubric.', type: 'danger' });
+      setAlertModal({ isOpen: true, title: 'Lỗi Cập Nhật Rubric', message: err.response?.data?.message || 'Có lỗi xảy ra khi lưu cấu hình Rubric.', type: 'danger' });
     } finally {
       setSaving(false);
     }
   };
+
 
   const handleResetDefault = async () => {
     setSaving(true);
