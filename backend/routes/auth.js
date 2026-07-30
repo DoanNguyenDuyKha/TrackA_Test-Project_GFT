@@ -40,6 +40,37 @@ router.post('/register', async (req, res) => {
     const userResponse = newUser.toObject();
     delete userResponse.password;
 
+    // ── Gửi Thông Báo Cho Admin khi có Học Viên Đăng Ký Tài Khoản Mới ──
+    try {
+      const Notification = require('../models/Notification');
+      const admins = await User.find({ role: 'admin' });
+      const adminNotifData = {
+        title: '👤 Học Viên Mới Đăng Ký',
+        message: `Học viên ${newUser.name} (${newUser.email}) vừa đăng ký tài khoản mới trên hệ thống.`,
+        type: 'submission_alert',
+        senderId: newUser._id,
+        senderName: newUser.name,
+        isRead: false
+      };
+
+      for (const admin of admins) {
+        await Notification.create({ ...adminNotifData, recipientId: admin._id });
+      }
+
+      // Emit socket nếu ở local dev
+      const io = req.app.get('io');
+      if (io) {
+        io.to('admin_room').emit('admin_submission_alert', {
+          studentName: newUser.name,
+          studentGroup: newUser.studentGroup,
+          assignmentTitle: 'Đăng ký tài khoản',
+          overallBand: 'N/A'
+        });
+      }
+    } catch (notifErr) {
+      console.error('Register notification error (non-critical):', notifErr.message);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -48,6 +79,7 @@ router.post('/register', async (req, res) => {
         token
       }
     });
+
   } catch (error) {
     console.error('Register Error:', error);
     return res.status(500).json({ success: false, message: 'Server error during registration', error: error.message });

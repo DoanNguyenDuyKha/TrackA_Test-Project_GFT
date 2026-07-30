@@ -115,7 +115,8 @@ const AdminResources = () => {
       };
 
       let res;
-      if (isEditing && editingId) {
+      const isEditMode = isEditing && editingId;
+      if (isEditMode) {
         res = await api.put(`/resources/${editingId}`, payload);
       } else {
         res = await api.post('/resources', payload);
@@ -124,14 +125,33 @@ const AdminResources = () => {
       if (res.data.success) {
         setShowAddEditModal(false);
         fetchResources();
+
+        // 🔔 Hiển thị thông báo thành công khi Tải lên / Cập nhật tài liệu
+        setConfirmModal({
+          isOpen: true,
+          title: isEditMode ? 'Cập Nhật Tài Liệu Thành Công' : 'Tải Lên Tài Liệu Thành Công',
+          message: isEditMode
+            ? `Đã cập nhật thông tin tài liệu "${title}" trong Kho lưu trữ Admin.`
+            : `Tài liệu "${title}" (${documentName || 'File liên kết'}) đã được tải lên thành công vào Kho lưu trữ!`,
+          type: 'success',
+          confirmText: 'Đóng Thông Báo',
+          onConfirm: () => {}
+        });
       }
     } catch (err) {
       console.error('Error saving resource:', err);
-      alert('Có lỗi xảy ra khi lưu tài liệu.');
+      setConfirmModal({
+        isOpen: true,
+        title: 'Lỗi Lưu Tài Liệu',
+        message: err.response?.data?.message || 'Có lỗi xảy ra khi lưu tài liệu. Vui lòng thử lại!',
+        type: 'danger',
+        confirmText: 'Đóng',
+        onConfirm: () => {}
+      });
     }
   };
 
-  // Confirm Modal State
+  // Confirm / Alert Modal State
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: '',
@@ -140,6 +160,7 @@ const AdminResources = () => {
     confirmText: 'Xác Nhận Xóa',
     onConfirm: () => {}
   });
+
 
   // Delete resource from bank
   const handleDeleteResource = (id) => {

@@ -178,7 +178,8 @@ const AdminAssignments = () => {
       };
 
       let res;
-      if (editMode && editingAssignmentId) {
+      const isEdit = editMode && editingAssignmentId;
+      if (isEdit) {
         res = await api.put(`/assignments/${editingAssignmentId}`, payload);
       } else {
         res = await api.post('/assignments', payload);
@@ -187,13 +188,25 @@ const AdminAssignments = () => {
       if (res.data.success) {
         setShowModal(false);
         fetchAssignments();
+
+        // 🔔 Hiển thị thông báo thành công
+        setConfirmModal({
+          isOpen: true,
+          title: isEdit ? 'Cập Nhật Đề Thi Thành Công' : 'Tạo Đề Thi Mới Thành Công',
+          message: isEdit 
+            ? `Đã cập nhật thành công đề thi "${title}". Dữ liệu bài mẫu và dàn ý 4 phần đã được lưu!`
+            : `Đề thi "${title}" đã được khởi tạo thành công và sẵn sàng hiển thị cho học viên nhóm ${targetGroup.toUpperCase()}.`,
+          type: 'success',
+          confirmText: 'Đóng Thông Báo',
+          onConfirm: () => {}
+        });
       }
     } catch (err) {
       console.error('Error saving assignment:', err.response?.data || err.message);
     }
   };
 
-  // Confirm Modal State
+  // Confirm / Alert Modal State
 
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -203,6 +216,7 @@ const AdminAssignments = () => {
     confirmText: 'Xác Nhận Xóa',
     onConfirm: () => {}
   });
+
 
   const handleDelete = (id) => {
     setConfirmModal({
