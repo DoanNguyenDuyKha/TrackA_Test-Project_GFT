@@ -13,12 +13,6 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // 🛑 Không hiển thị Navbar trên trang Đăng nhập hoặc Đăng ký
-  if (['/login', '/register'].includes(location.pathname)) {
-    return null;
-  }
-
-
   // Realtime Notification State
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -34,6 +28,7 @@ const Navbar = () => {
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [studentsList, setStudentsList] = useState([]);
   const [sendingDoc, setSendingDoc] = useState(false);
+
 
   const fetchNotifications = async () => {
     try {
@@ -199,9 +194,14 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  // 🛑 Không hiển thị Navbar trên trang Đăng nhập hoặc Đăng ký (sau khi đã gọi toàn bộ Hooks)
+  if (['/login', '/register'].includes(location.pathname)) {
+    return null;
+  }
+
   return (
     <>
-      <nav className="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             {/* Logo & Brand */}
@@ -407,7 +407,8 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-      </nav>
+      </header>
+
 
       {/* Modal Admin Gửi Tài Liệu & Thông Báo Realtime Cho Học Viên (Kích Thước Lớn Rộng Rãi) */}
       {showSendDocModal && (
