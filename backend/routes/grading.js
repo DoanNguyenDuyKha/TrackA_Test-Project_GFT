@@ -220,6 +220,9 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       { prompt: 'Câu 10: Điền từ chỉ sự phát triển toàn diện:', blankSpaceText: 'Schools should aim for the _______ of young individuals.', correctAnswer: 'holistic development', explanation: '"holistic development" là sự phát triển toàn diện cả thể chất lẫn trí tuệ.' }
     ];
 
+    const topicPrompts = fallbackPrompts[randomTopic] || fallbackPrompts['Technology'];
+    let promptText = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
+
     if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
       try {
         const aiRes = await openai.chat.completions.create({
@@ -255,6 +258,7 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
         console.error('Error generating AI prompt, using fallback:', e.message);
       }
     }
+
 
 
     const newAssignment = await Assignment.create({
