@@ -396,7 +396,17 @@ const AdminAssignments = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleSaveAssignment} className="flex-1 flex flex-col justify-between space-y-6 text-xs font-semibold">
+              <form
+                onSubmit={handleSaveAssignment}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    if (activeTab === 'general') setActiveTab('samples');
+                    else if (activeTab === 'samples') setActiveTab('outline');
+                  }
+                }}
+                className="flex-1 flex flex-col justify-between space-y-6 text-xs font-semibold"
+              >
 
                 {/* TAB 1: General Info & Prompt */}
                 {activeTab === 'general' && (
