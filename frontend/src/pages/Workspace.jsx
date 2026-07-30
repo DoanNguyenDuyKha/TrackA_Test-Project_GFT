@@ -39,16 +39,37 @@ const Workspace = () => {
       try {
         const res = await api.get(`/assignments/${id}`);
         if (res.data.success) {
-          const assignData = res.data.data;
-          setAssignment(assignData);
-
-          // Lấy trực tiếp bài mẫu mà Admin đã thêm tùy theo nhóm năng lực của học viên (Support -> 6.0, Average -> 7.0, Excellent -> 8.5+)
+          let assignData = res.data.data;
           const group = user?.studentGroup || 'support';
           const groupSample = assignData.groupSampleAnswers?.[group] || assignData.sampleAnswer;
           const bandLabel = group === 'support' ? '6.0' : (group === 'average' ? '7.0' : '8.5+');
           
           setAdaptiveSample(groupSample);
           setAdaptiveBand(bandLabel);
+
+          // 🚀 Nếu từ vựng hoặc bài tập rỗng nhưng có bài luận mẫu, tự động gọi AI trích xuất tức thì cho học viên xem
+          const isVocabEmpty = !assignData.suggestedVocabulary || assignData.suggestedVocabulary.length === 0;
+          const isExerciseEmpty = !assignData.exercises || assignData.exercises.length === 0;
+
+          if ((isVocabEmpty || isExerciseEmpty) && groupSample && groupSample.trim().length > 20) {
+            setLoadingSample(true);
+            try {
+              const sampleRes = await api.post(`/assignments/${id}/generate-adaptive-sample`);
+              if (sampleRes.data.success && sampleRes.data.data) {
+                assignData = {
+                  ...assignData,
+                  suggestedVocabulary: sampleRes.data.data.suggestedVocabulary || assignData.suggestedVocabulary,
+                  exercises: sampleRes.data.data.exercises || assignData.exercises
+                };
+              }
+            } catch (sampleErr) {
+              console.error('Error generating adaptive sample on the fly:', sampleErr);
+            } finally {
+              setLoadingSample(false);
+            }
+          }
+
+          setAssignment(assignData);
         }
       } catch (err) {
         console.error('Error fetching assignment details:', err);
@@ -449,7 +470,13 @@ const Workspace = () => {
                     <div className="p-4 bg-purple-50/80 rounded-2xl border border-purple-200">
                       <p className="text-xs font-black text-purple-900 uppercase">📚 TỪ VỰNG & COLLOCATIONS ĐẮT GIÁ:</p>
                     </div>
-                    {assignment.suggestedVocabulary && assignment.suggestedVocabulary.length > 0 ? (
+
+                    {loadingSample ? (
+                      <div className="p-8 text-center space-y-3 bg-slate-50 rounded-3xl border border-slate-200">
+                        <Sparkles className="w-8 h-8 text-purple-600 animate-spin mx-auto" />
+                        <p className="text-sm text-slate-700 font-bold">AI Đang Trích Xuất 10 Từ Vựng Đắt Giá Từ Bài Luận Mẫu...</p>
+                      </div>
+                    ) : assignment.suggestedVocabulary && assignment.suggestedVocabulary.length > 0 ? (
                       <div className="space-y-3">
                         {assignment.suggestedVocabulary.map((item, idx) => (
                           <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1 text-sm">
@@ -473,14 +500,19 @@ const Workspace = () => {
                   </div>
                 )}
 
-                {/* 5. Tab Bài Tập Exercise Tương Tác Củng Cố Kiến Thức (Không Bị Co Cụm, Mở Rộng Rãi Xuống Trang) */}
+                {/* 5. Tab Bài Tập Exercise Tương Tác Củng Cố Kiến Thức */}
                 {activeTab === 'exercise' && (
                   <div className="space-y-5 animate-fadeIn">
                     <div className="p-4 bg-indigo-50/80 rounded-2xl border border-indigo-200">
                       <p className="text-xs font-black text-indigo-900 uppercase">✨ BÀI TẬP EXERCISE TƯƠNG TÁC THỰC HÀNH:</p>
                     </div>
 
-                    {assignment.exercises && assignment.exercises.length > 0 ? (
+                    {loadingSample ? (
+                      <div className="p-8 text-center space-y-3 bg-slate-50 rounded-3xl border border-slate-200">
+                        <Sparkles className="w-8 h-8 text-indigo-600 animate-spin mx-auto" />
+                        <p className="text-sm text-slate-700 font-bold">AI Đang Khởi Tạo 10 Bài Tập Điền Từ Tương Tác...</p>
+                      </div>
+                    ) : assignment.exercises && assignment.exercises.length > 0 ? (
                       <div className="space-y-5">
                         {assignment.exercises.map((ex, exIdx) => {
                           const isChecked = exerciseResults[exIdx] !== undefined;
