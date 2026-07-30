@@ -396,17 +396,7 @@ const AdminAssignments = () => {
                 </button>
               </div>
 
-              <form
-                onSubmit={handleSaveAssignment}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
-                    e.preventDefault();
-                    if (activeTab === 'general') setActiveTab('samples');
-                    else if (activeTab === 'samples') setActiveTab('outline');
-                  }
-                }}
-                className="flex-1 flex flex-col justify-between space-y-6 text-xs font-semibold"
-              >
+              <div className="flex-1 flex flex-col justify-between space-y-6 text-xs font-semibold overflow-y-auto pr-1">
 
                 {/* TAB 1: General Info & Prompt */}
                 {activeTab === 'general' && (
@@ -623,7 +613,8 @@ const AdminAssignments = () => {
                       </button>
                     ) : (
                       <button
-                        type="submit"
+                        type="button"
+                        onClick={handleSaveAssignment}
                         className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-indigo-700 shadow-md transition"
                       >
                         Lưu & Tạo Đề Thi
@@ -631,7 +622,8 @@ const AdminAssignments = () => {
                     )}
                   </div>
                 </div>
-              </form>
+              </div>
+
             </div>
           </div>
         )}
