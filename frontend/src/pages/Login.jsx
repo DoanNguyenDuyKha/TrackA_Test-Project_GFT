@@ -69,7 +69,7 @@ const Login = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="student@gft.edu.vn"
+                placeholder="admin@gft.edu.vn"
                 className="w-full pl-9 pr-4 py-2.5 bg-slate-50 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white"
               />
             </div>
@@ -109,10 +109,8 @@ const Login = () => {
         </form>
 
         <div className="pt-4 border-t border-slate-100 text-center space-y-2">
-          <p className="text-xs text-slate-500">Tài khoản mặc định thử nghiệm:</p>
-          <div className="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono flex items-center justify-center space-x-3 whitespace-nowrap">
-            <span>Học viên: <strong className="text-blue-600">student@gft.edu.vn</strong> / <strong>123456</strong></span>
-            <span className="text-slate-300">|</span>
+          <p className="text-xs text-slate-500">Tài khoản Quản trị thử nghiệm:</p>
+          <div className="text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 font-mono flex items-center justify-center space-x-2 whitespace-nowrap">
             <span>Admin: <strong className="text-indigo-600">admin@gft.edu.vn</strong> / <strong>123456</strong></span>
           </div>
         </div>
