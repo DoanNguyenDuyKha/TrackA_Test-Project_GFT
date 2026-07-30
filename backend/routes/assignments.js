@@ -156,6 +156,47 @@ router.get('/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Helper function: Tự động dùng GPT-4o để trích xuất 10 Từ vựng + 10 Bài tập từ đoạn văn bài mẫu của Admin
+async function generateVocabAndExercisesFromParagraph(sampleText, topic, targetGroup) {
+  const OpenAI = require('openai');
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || 'dummy-key'
+  });
+
+  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy-key') {
+    return { suggestedVocabulary: [], exercises: [] };
+  }
+
+  const targetBand = targetGroup === 'support' ? '6.0' : targetGroup === 'average' ? '7.0' : '8.5+';
+
+  try {
+    const aiRes = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: `Bạn là trợ lý giảng dạy IELTS DOL English. Nhiệm vụ của bạn là phân tích đoạn văn bài luận IELTS Task 2 chủ đề "${topic}" trình độ Band ${targetBand} và trích xuất đúng 10 từ vựng cốt lõi C1/C2 + 10 bài tập điền từ tương tác phù hợp. Trả về duy nhất định dạng JSON.`
+        },
+        {
+          role: 'user',
+          content: `[BÀI LUẬN MẪU BAND ${targetBand}]:\n${sampleText}\n\nHãy phân tích và trả về cấu trúc JSON đúng định dạng như sau:\n{\n  "suggestedVocabulary": [\n    {"word": "từ vựng", "meaning": "nghĩa tiếng Việt", "collocation": "cụm từ đi kèm trong bài"}\n  ],\n  "exercises": [\n    {"prompt": "Câu hỏi...", "blankSpaceText": "Sentence with _______ blank", "correctAnswer": "từ từ đoạn văn", "explanation": "Giải thích ngắn"}\n  ]\n}`
+        }
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.3
+    });
+
+    const parsedData = JSON.parse(aiRes.choices[0].message.content);
+    return {
+      suggestedVocabulary: parsedData.suggestedVocabulary || [],
+      exercises: parsedData.exercises || []
+    };
+  } catch (err) {
+    console.error('Error auto-generating vocab & exercises with GPT-4o:', err.message);
+    return { suggestedVocabulary: [], exercises: [] };
+  }
+}
+
 // POST /api/assignments - Admin tạo đề thi mới
 router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
@@ -165,7 +206,7 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields: title, prompt, topic' });
     }
 
-    // Chọn đúng đoạn văn Admin đã viết ở 3 ô tương ứng theo targetGroup để lưu làm sampleAnswer mặc định
+    // Chọn đúng đoạn văn Admin đã viết ở ô tương ứng theo targetGroup để lưu làm sampleAnswer mặc định
     let primarySampleAnswer = sampleAnswer;
     if (groupSampleAnswers) {
       if (targetGroup === 'support' && groupSampleAnswers.support) {
@@ -177,6 +218,20 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       }
     }
 
+    // 🚀 Nếu chưa có từ vựng hoặc bài tập do Admin điền thủ công, tự động gọi GPT-4o trích xuất trực tiếp từ bài mẫu
+    let finalVocab = suggestedVocabulary || [];
+    let finalExercises = exercises || [];
+
+    if ((!finalVocab.length || !finalExercises.length) && primarySampleAnswer && primarySampleAnswer.trim().length > 30) {
+      const autoExtracted = await generateVocabAndExercisesFromParagraph(primarySampleAnswer, topic, targetGroup);
+      if (!finalVocab.length && autoExtracted.suggestedVocabulary.length > 0) {
+        finalVocab = autoExtracted.suggestedVocabulary;
+      }
+      if (!finalExercises.length && autoExtracted.exercises.length > 0) {
+        finalExercises = autoExtracted.exercises;
+      }
+    }
+
     const newAssignment = await Assignment.create({
       title,
       prompt,
@@ -185,8 +240,8 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
       scaffoldingTemplate,
       sampleAnswer: primarySampleAnswer || '',
       groupSampleAnswers: groupSampleAnswers || {},
-      suggestedVocabulary: suggestedVocabulary || [],
-      exercises: exercises || [],
+      suggestedVocabulary: finalVocab,
+      exercises: finalExercises,
       createdBy: req.user._id
     });
 
@@ -209,9 +264,38 @@ router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Assignment not found' });
     }
 
+    let updateData = { ...req.body };
+
+    // Tự động trích xuất lại từ vựng & bài tập nếu chưa có hoặc đoạn văn thay đổi
+    let primarySampleAnswer = updateData.sampleAnswer || assignment.sampleAnswer;
+    if (updateData.groupSampleAnswers) {
+      const tg = updateData.targetGroup || assignment.targetGroup;
+      if (tg === 'support' && updateData.groupSampleAnswers.support) {
+        primarySampleAnswer = updateData.groupSampleAnswers.support;
+      } else if (tg === 'average' && updateData.groupSampleAnswers.average) {
+        primarySampleAnswer = updateData.groupSampleAnswers.average;
+      } else if (updateData.groupSampleAnswers.excellent) {
+        primarySampleAnswer = updateData.groupSampleAnswers.excellent;
+      }
+      updateData.sampleAnswer = primarySampleAnswer;
+    }
+
+    const currentVocab = updateData.suggestedVocabulary || assignment.suggestedVocabulary || [];
+    const currentExercises = updateData.exercises || assignment.exercises || [];
+
+    if ((!currentVocab.length || !currentExercises.length) && primarySampleAnswer && primarySampleAnswer.trim().length > 30) {
+      const autoExtracted = await generateVocabAndExercisesFromParagraph(primarySampleAnswer, updateData.topic || assignment.topic, updateData.targetGroup || assignment.targetGroup);
+      if (!currentVocab.length && autoExtracted.suggestedVocabulary.length > 0) {
+        updateData.suggestedVocabulary = autoExtracted.suggestedVocabulary;
+      }
+      if (!currentExercises.length && autoExtracted.exercises.length > 0) {
+        updateData.exercises = autoExtracted.exercises;
+      }
+    }
+
     const updatedAssignment = await Assignment.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 
