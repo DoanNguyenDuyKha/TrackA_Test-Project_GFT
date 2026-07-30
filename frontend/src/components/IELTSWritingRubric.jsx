@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import api from '../utils/api';
 import { BookOpen, Sparkles, Target, ArrowRight, Info, CheckCircle2 } from 'lucide-react';
+
 
 const RUBRIC_DATA = {
   TR: {
