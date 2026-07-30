@@ -97,7 +97,17 @@ const Login = () => {
           >
             {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
           </button>
+
+          <div className="pt-2 text-center">
+            <p className="text-xs text-slate-500">
+              Chưa có tài khoản học viên?{' '}
+              <a href="/register" className="font-extrabold text-blue-600 hover:underline">
+                Đăng ký tài khoản mới ngay
+              </a>
+            </p>
+          </div>
         </form>
+
 
         <div className="pt-4 border-t border-slate-100 text-center space-y-2">
           <p className="text-xs text-slate-500">Tài khoản mặc định để thử nghiệm:</p>

@@ -13,6 +13,12 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // 🛑 Không hiển thị Navbar trên trang Đăng nhập hoặc Đăng ký
+  if (['/login', '/register'].includes(location.pathname)) {
+    return null;
+  }
+
+
   // Realtime Notification State
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
