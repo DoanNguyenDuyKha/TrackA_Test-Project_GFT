@@ -179,7 +179,39 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       ? `AI Master Exam #${uniqueExamId} - Topic ${randomTopic} (Band 8.5+ Challenge)`
       : `Bài Test Nâng Hạng (${studentGroup.toUpperCase()} ➔ ${targetGroup.toUpperCase()})`;
 
-    let promptText = `Some people believe that advanced technological developments produce severe ethical dilemmas in modern society. To what extent do you agree or disagree?`;
+    const fallbackPrompts = {
+      Education: [
+        "Some people think that universities should provide graduates with the knowledge and skills needed in the workplace. Others think that the true function of a university should be to give access to knowledge for its own sake, regardless of whether the course is useful to an employer. Discuss both views and give your opinion.",
+        "In many countries, secondary schools now require students to perform unpaid community work. Do the advantages of this requirement outweigh the disadvantages?"
+      ],
+      Health: [
+        "Some people believe that the government should introduce a tax on unhealthy food and drinks to encourage healthier eating habits. To what extent do you agree or disagree?",
+        "With the increasing availability of medical information online, more people are self-diagnosing illnesses instead of consulting healthcare professionals. Discuss the causes and impacts of this trend."
+      ],
+      Art: [
+        "Some people argue that government funding for the arts, such as music and theatre, is a waste of money in modern society. To what extent do you agree or disagree?",
+        "Art and music classes are being reduced in many school curricula to make more room for science and mathematics. Is this a positive or negative development?"
+      ],
+      Technology: [
+        "Some people believe that advanced technological developments, such as artificial intelligence and automation, produce severe ethical dilemmas in modern society. To what extent do you agree or disagree?",
+        "The increasing use of smartphones and social media has altered human interaction significantly. Do the benefits of this technology outweigh the drawbacks?"
+      ],
+      Sport: [
+        "Successful sports professionals can earn a great deal more money than people in other important professions. Some people think this is fully justified, while others think it is unfair. Discuss both views and give your opinion.",
+        "Hosting international sporting events brings major economic and social benefits to a country. To what extent do you agree or disagree?"
+      ],
+      'Social Issues': [
+        "In many countries, an increasing number of young people are choosing to live alone rather than with their families or roommates. What are the reasons for this, and is it a positive or negative trend?",
+        "The gap between the wealthy and the poor is widening globally. What problems does this disparity cause, and what measures can be taken to reduce it?"
+      ],
+      Environment: [
+        "Environmental pollution is a global problem, and it can only be solved through international cooperation rather than individual action. To what extent do you agree or disagree?",
+        "The consumption of single-use plastic has caused severe damage to marine ecosystems. What are the primary causes, and how can governments encourage sustainable alternatives?"
+      ]
+    };
+
+    const topicPrompts = fallbackPrompts[randomTopic] || fallbackPrompts['Technology'];
+    let promptText = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
 
     if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
       try {
@@ -203,6 +235,7 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
         console.error('Error generating AI prompt, using fallback:', e.message);
       }
     }
+
 
     // Sinh từ vựng & bài tập đa dạng phong phú
     const fullSuggestedVocab = [
@@ -289,7 +322,39 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
     const uniqueExamId = Math.floor(Math.random() * 9000 + 1000);
 
     let examTitle = `AI Master Exam #${uniqueExamId} - Topic ${randomTopic} (Band 8.5+ Challenge)`;
-    let promptText = `Some people believe that advanced technological developments produce severe ethical dilemmas in modern society. To what extent do you agree or disagree?`;
+    const fallbackPrompts = {
+      Education: [
+        "Some people think that universities should provide graduates with the knowledge and skills needed in the workplace. Others think that the true function of a university should be to give access to knowledge for its own sake, regardless of whether the course is useful to an employer. Discuss both views and give your opinion.",
+        "In many countries, secondary schools now require students to perform unpaid community work. Do the advantages of this requirement outweigh the disadvantages?"
+      ],
+      Health: [
+        "Some people believe that the government should introduce a tax on unhealthy food and drinks to encourage healthier eating habits. To what extent do you agree or disagree?",
+        "With the increasing availability of medical information online, more people are self-diagnosing illnesses instead of consulting healthcare professionals. Discuss the causes and impacts of this trend."
+      ],
+      Art: [
+        "Some people argue that government funding for the arts, such as music and theatre, is a waste of money in modern society. To what extent do you agree or disagree?",
+        "Art and music classes are being reduced in many school curricula to make more room for science and mathematics. Is this a positive or negative development?"
+      ],
+      Technology: [
+        "Some people believe that advanced technological developments, such as artificial intelligence and automation, produce severe ethical dilemmas in modern society. To what extent do you agree or disagree?",
+        "The increasing use of smartphones and social media has altered human interaction significantly. Do the benefits of this technology outweigh the drawbacks?"
+      ],
+      Sport: [
+        "Successful sports professionals can earn a great deal more money than people in other important professions. Some people think this is fully justified, while others think it is unfair. Discuss both views and give your opinion.",
+        "Hosting international sporting events brings major economic and social benefits to a country. To what extent do you agree or disagree?"
+      ],
+      'Social Issues': [
+        "In many countries, an increasing number of young people are choosing to live alone rather than with their families or roommates. What are the reasons for this, and is it a positive or negative trend?",
+        "The gap between the wealthy and the poor is widening globally. What problems does this disparity cause, and what measures can be taken to reduce it?"
+      ],
+      Environment: [
+        "Environmental pollution is a global problem, and it can only be solved through international cooperation rather than individual action. To what extent do you agree or disagree?",
+        "The consumption of single-use plastic has caused severe damage to marine ecosystems. What are the primary causes, and how can governments encourage sustainable alternatives?"
+      ]
+    };
+
+    const topicPrompts = fallbackPrompts[randomTopic] || fallbackPrompts['Technology'];
+    let promptText = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
 
     if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
       try {
@@ -313,6 +378,7 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
         console.error('Error generating AI prompt, using fallback:', e.message);
       }
     }
+
 
     const newAssignment = await Assignment.create({
       title: examTitle,
