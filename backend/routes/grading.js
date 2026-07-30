@@ -194,35 +194,7 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       ]
     };
 
-    const topicPrompts = fallbackPrompts[randomTopic] || fallbackPrompts['Technology'];
-    let promptText = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
-
-    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
-      try {
-        const aiRes = await openai.chat.completions.create({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: 'Bạn là một Chuyên gia ra đề thi IELTS Writing Task 2 cấp độ cao của Cambridge. Hãy sáng tạo 1 câu hỏi essay IELTS Task 2 hoàn toàn mới, độc bản, nâng cao về tư duy phản biện.'
-            },
-            {
-              role: 'user',
-              content: `Hãy sinh 1 đề thi IELTS Writing Task 2 độc bản hoàn toàn mới về chủ đề ${randomTopic} (Mã đề #${timestamp}). Chỉ trả về duy nhất 1 câu đề bài Tiếng Anh.`
-            }
-          ],
-          temperature: 0.95
-        });
-
-        promptText = aiRes.choices[0].message.content.trim();
-      } catch (e) {
-        console.error('Error generating AI prompt, using fallback:', e.message);
-      }
-    }
-
-
-    // Sinh từ vựng & bài tập đa dạng phong phú
-    const fullSuggestedVocab = [
+    let fullSuggestedVocab = [
       { word: 'profound implications', meaning: 'Hệ quả/tác động sâu sắc', collocation: 'have profound implications for society' },
       { word: 'imperative duty', meaning: 'Nhiệm vụ bắt buộc', collocation: 'regard as an imperative duty' },
       { word: 'substantially alleviate', meaning: 'Giảm thiểu đáng kể', collocation: 'substantially alleviate the burden' },
@@ -235,7 +207,7 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       { word: 'holistic development', meaning: 'Sự phát triển toàn diện', collocation: 'promote holistic development' }
     ];
 
-    const fullExercises = [
+    let fullExercises = [
       { prompt: 'Câu 1: Điền cụm từ vựng học thuật chỉ tác động sâu sắc:', blankSpaceText: 'The technological revolution has had _______ for modern society.', correctAnswer: 'profound implications', explanation: '"profound implications" nghĩa là các tác động/hệ quả sâu sắc.' },
       { prompt: 'Câu 2: Điền từ chỉ trách nhiệm bắt buộc:', blankSpaceText: 'Protecting global ecosystems is considered an _______ for all governments.', correctAnswer: 'imperative duty', explanation: '"imperative duty" chỉ nghĩa là trách nhiệm/nghĩa vụ bắt buộc.' },
       { prompt: 'Câu 3: Điền từ chỉ việc giảm nhẹ gánh nặng:', blankSpaceText: 'Renewable energy investment will _______ the dependence on fossil fuels.', correctAnswer: 'substantially alleviate', explanation: '"substantially alleviate" nghĩa là làm giảm nhẹ đáng kể.' },
@@ -247,6 +219,43 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       { prompt: 'Câu 9: Điền từ chỉ sự kiên cường về mặt trí tuệ:', blankSpaceText: 'Challenging curricula help students build _______.', correctAnswer: 'intellectual resilience', explanation: '"intellectual resilience" là bản lĩnh/sự kiên cường trí tuệ.' },
       { prompt: 'Câu 10: Điền từ chỉ sự phát triển toàn diện:', blankSpaceText: 'Schools should aim for the _______ of young individuals.', correctAnswer: 'holistic development', explanation: '"holistic development" là sự phát triển toàn diện cả thể chất lẫn trí tuệ.' }
     ];
+
+    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
+      try {
+        const aiRes = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          response_format: { type: 'json_object' },
+          messages: [
+            {
+              role: 'system',
+              content: `Bạn là Chuyên gia ra đề IELTS Writing Task 2 Cambridge. Sáng tạo 1 đề thi độc bản hoàn toàn mới về chủ đề ${randomTopic} dạng JSON:
+{
+  "prompt": "Câu hỏi essay IELTS Task 2 bằng tiếng Anh độc bản hoàn toàn mới",
+  "suggestedVocabulary": [
+    { "word": "từ vựng C1/C2", "meaning": "nghĩa tiếng Việt", "collocation": "cụm từ đi kèm" }
+  ],
+  "exercises": [
+    { "prompt": "Mô tả câu hỏi", "blankSpaceText": "Câu có chỗ trống _______", "correctAnswer": "từ cần điền", "explanation": "giải thích chi tiết" }
+  ]
+}`
+            },
+            {
+              role: 'user',
+              content: `Sáng tạo đề thi IELTS Task 2 độc bản mới về chủ đề ${randomTopic} (Mã sinh ngẫu nhiên #${timestamp}).`
+            }
+          ],
+          temperature: 0.95
+        });
+
+        const parsedAI = JSON.parse(aiRes.choices[0].message.content);
+        if (parsedAI.prompt) promptText = parsedAI.prompt;
+        if (parsedAI.suggestedVocabulary && Array.isArray(parsedAI.suggestedVocabulary)) fullSuggestedVocab = parsedAI.suggestedVocabulary;
+        if (parsedAI.exercises && Array.isArray(parsedAI.exercises)) fullExercises = parsedAI.exercises;
+      } catch (e) {
+        console.error('Error generating AI prompt, using fallback:', e.message);
+      }
+    }
+
 
     const newAssignment = await Assignment.create({
       title: examTitle,
