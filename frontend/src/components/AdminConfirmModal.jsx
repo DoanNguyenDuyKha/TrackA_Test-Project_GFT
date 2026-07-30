@@ -59,13 +59,15 @@ const AdminConfirmModal = ({ isOpen, onClose, onConfirm, title, message, type = 
         </div>
 
         <div className="flex items-center justify-center space-x-3 pt-3 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition"
-          >
-            Hủy Bỏ
-          </button>
+          {!['Đóng', 'Đã Hiểu', 'Đóng Thông Báo'].includes(confirmText) && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition"
+            >
+              Hủy Bỏ
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -77,6 +79,7 @@ const AdminConfirmModal = ({ isOpen, onClose, onConfirm, title, message, type = 
             {confirmText}
           </button>
         </div>
+
       </div>
     </div>
   );
