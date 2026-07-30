@@ -163,90 +163,32 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       ? `AI Master Exam #${uniqueExamId} - Topic ${randomTopic} (Band 8.5+ Challenge)`
       : `Bài Test Nâng Hạng (${studentGroup.toUpperCase()} ➔ ${targetGroup.toUpperCase()})`;
 
-    const fallbackPrompts = {
-      Education: [
-        "Some people think that universities should provide graduates with the knowledge and skills needed in the workplace. Others think that the true function of a university should be to give access to knowledge for its own sake, regardless of whether the course is useful to an employer. Discuss both views and give your opinion.",
-        "In many countries, secondary schools now require students to perform unpaid community work. Do the advantages of this requirement outweigh the disadvantages?"
-      ],
-      Health: [
-        "Some people believe that the government should introduce a tax on unhealthy food and drinks to encourage healthier eating habits. To what extent do you agree or disagree?",
-        "With the increasing availability of medical information online, more people are self-diagnosing illnesses instead of consulting healthcare professionals. Discuss the causes and impacts of this trend."
-      ],
-      Art: [
-        "Some people argue that government funding for the arts, such as music and theatre, is a waste of money in modern society. To what extent do you agree or disagree?",
-        "Art and music classes are being reduced in many school curricula to make more room for science and mathematics. Is this a positive or negative development?"
-      ],
-      Technology: [
-        "Some people believe that advanced technological developments, such as artificial intelligence and automation, produce severe ethical dilemmas in modern society. To what extent do you agree or disagree?",
-        "The increasing use of smartphones and social media has altered human interaction significantly. Do the benefits of this technology outweigh the drawbacks?"
-      ],
-      Sport: [
-        "Successful sports professionals can earn a great deal more money than people in other important professions. Some people think this is fully justified, while others think it is unfair. Discuss both views and give your opinion.",
-        "Hosting international sporting events brings major economic and social benefits to a country. To what extent do you agree or disagree?"
-      ],
-      'Social Issues': [
-        "In many countries, an increasing number of young people are choosing to live alone rather than with their families or roommates. What are the reasons for this, and is it a positive or negative trend?",
-        "The gap between the wealthy and the poor is widening globally. What problems does this disparity cause, and what measures can be taken to reduce it?"
-      ],
-      Environment: [
-        "Environmental pollution is a global problem, and it can only be solved through international cooperation rather than individual action. To what extent do you agree or disagree?",
-        "The consumption of single-use plastic has caused severe damage to marine ecosystems. What are the primary causes, and how can governments encourage sustainable alternatives?"
-      ]
-    };
+    let promptText = `With the rapid advancement of technology in modern society, some people believe it brings positive opportunities while others argue it creates ethical dilemmas. To what extent do you agree or disagree? (Unique Seed #${timestamp})`;
 
-    let fullSuggestedVocab = [
-      { word: 'profound implications', meaning: 'Hệ quả/tác động sâu sắc', collocation: 'have profound implications for society' },
-      { word: 'imperative duty', meaning: 'Nhiệm vụ bắt buộc', collocation: 'regard as an imperative duty' },
-      { word: 'substantially alleviate', meaning: 'Giảm thiểu đáng kể', collocation: 'substantially alleviate the burden' },
-      { word: 'indispensable asset', meaning: 'Tài sản không thể thiếu', collocation: 'an indispensable asset to growth' },
-      { word: 'foster innovation', meaning: 'Thúc đẩy sự đổi mới', collocation: 'foster innovation and progress' },
-      { word: 'deterrent factor', meaning: 'Yếu tố răn đe', collocation: 'act as a strong deterrent factor' },
-      { word: 'ethical dilemma', meaning: 'Tiến thoái lưỡng nan về đạo đức', collocation: 'pose a severe ethical dilemma' },
-      { word: 'unprecedented growth', meaning: 'Sự tăng trưởng chưa từng có', collocation: 'witness unprecedented growth' },
-      { word: 'intellectual resilience', meaning: 'Sự kiên cường trí tuệ', collocation: 'cultivate intellectual resilience' },
-      { word: 'holistic development', meaning: 'Sự phát triển toàn diện', collocation: 'promote holistic development' }
-    ];
+    try {
+      const aiRes = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert Cambridge IELTS examiner. You MUST generate a completely original, highly creative, unique IELTS Writing Task 2 essay prompt in English on the given topic.'
+          },
+          {
+            role: 'user',
+            content: `Create a brand new, never-seen-before IELTS Writing Task 2 essay question regarding the topic: "${randomTopic}". Unique Request ID: ${timestamp}-${uniqueExamId}. Output ONLY the prompt text in English without quotes or extra explanation.`
+          }
+        ],
+        temperature: 0.98
+      });
 
-    let fullExercises = [
-      { prompt: 'Câu 1: Điền cụm từ vựng học thuật chỉ tác động sâu sắc:', blankSpaceText: 'The technological revolution has had _______ for modern society.', correctAnswer: 'profound implications', explanation: '"profound implications" nghĩa là các tác động/hệ quả sâu sắc.' },
-      { prompt: 'Câu 2: Điền từ chỉ trách nhiệm bắt buộc:', blankSpaceText: 'Protecting global ecosystems is considered an _______ for all governments.', correctAnswer: 'imperative duty', explanation: '"imperative duty" chỉ nghĩa là trách nhiệm/nghĩa vụ bắt buộc.' },
-      { prompt: 'Câu 3: Điền từ chỉ việc giảm nhẹ gánh nặng:', blankSpaceText: 'Renewable energy investment will _______ the dependence on fossil fuels.', correctAnswer: 'substantially alleviate', explanation: '"substantially alleviate" nghĩa là làm giảm nhẹ đáng kể.' },
-      { prompt: 'Câu 4: Điền từ chỉ tài sản vô giá/không thể thiếu:', blankSpaceText: 'Critical thinking skills are an _______ in the modern workplace.', correctAnswer: 'indispensable asset', explanation: '"indispensable asset" là tài sản/kỹ năng không thể thiếu.' },
-      { prompt: 'Câu 5: Điền từ chỉ sự thúc đẩy đổi mới:', blankSpaceText: 'Educational reforms should _______ and creative thinking.', correctAnswer: 'foster innovation', explanation: '"foster innovation" nghĩa là nuôi dưỡng/thúc đẩy đổi mới.' },
-      { prompt: 'Câu 6: Điền từ chỉ yếu tố răn đe:', blankSpaceText: 'Strict laws act as a strong _______ against illegal activities.', correctAnswer: 'deterrent factor', explanation: '"deterrent factor" nghĩa là yếu tố răn đe ngăn chặn.' },
-      { prompt: 'Câu 7: Điền từ chỉ cuộc xung đột đạo đức:', blankSpaceText: 'Genetic engineering often poses a complex _______.', correctAnswer: 'ethical dilemma', explanation: '"ethical dilemma" chỉ tình huống tiến thoái lưỡng nan về đạo đức.' },
-      { prompt: 'Câu 8: Điền từ chỉ sự phát triển chưa từng có:', blankSpaceText: 'The digital economy has experienced _______ over the past decade.', correctAnswer: 'unprecedented growth', explanation: '"unprecedented growth" là tăng trưởng vượt bậc chưa từng thấy.' },
-      { prompt: 'Câu 9: Điền từ chỉ sự kiên cường về mặt trí tuệ:', blankSpaceText: 'Challenging curricula help students build _______.', correctAnswer: 'intellectual resilience', explanation: '"intellectual resilience" là bản lĩnh/sự kiên cường trí tuệ.' },
-      { prompt: 'Câu 10: Điền từ chỉ sự phát triển toàn diện:', blankSpaceText: 'Schools should aim for the _______ of young individuals.', correctAnswer: 'holistic development', explanation: '"holistic development" là sự phát triển toàn diện cả thể chất lẫn trí tuệ.' }
-    ];
-
-    const topicPrompts = fallbackPrompts[randomTopic] || fallbackPrompts['Technology'];
-    let promptText = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
-
-    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
-      try {
-        const aiRes = await openai.chat.completions.create({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert Cambridge IELTS examiner. Generate a unique, challenging IELTS Writing Task 2 essay prompt in English.'
-            },
-            {
-              role: 'user',
-              content: `Write a brand new, unique IELTS Writing Task 2 essay question about ${randomTopic}. Unique seed ID #${timestamp}. Return ONLY the English essay prompt text without quotes.`
-            }
-          ],
-          temperature: 0.95
-        });
-
-        if (aiRes && aiRes.choices && aiRes.choices[0] && aiRes.choices[0].message) {
-          promptText = aiRes.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
-        }
-      } catch (e) {
-        console.error('Error generating AI prompt, using fallback:', e.message);
+      if (aiRes && aiRes.choices && aiRes.choices[0] && aiRes.choices[0].message && aiRes.choices[0].message.content) {
+        promptText = aiRes.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
       }
+    } catch (e) {
+      console.error('Error generating AI prompt from OpenAI, using dynamic fallback:', e.message);
+      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society. (ID: #${timestamp})`;
     }
+
 
 
 
@@ -295,90 +237,32 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
     const uniqueExamId = Math.floor(Math.random() * 9000 + 1000);
 
     let examTitle = `AI Master Exam #${uniqueExamId} - Topic ${randomTopic} (Band 8.5+ Challenge)`;
-    const fallbackPrompts = {
-      Education: [
-        "Some people think that universities should provide graduates with the knowledge and skills needed in the workplace. Others think that the true function of a university should be to give access to knowledge for its own sake, regardless of whether the course is useful to an employer. Discuss both views and give your opinion.",
-        "In many countries, secondary schools now require students to perform unpaid community work. Do the advantages of this requirement outweigh the disadvantages?"
-      ],
-      Health: [
-        "Some people believe that the government should introduce a tax on unhealthy food and drinks to encourage healthier eating habits. To what extent do you agree or disagree?",
-        "With the increasing availability of medical information online, more people are self-diagnosing illnesses instead of consulting healthcare professionals. Discuss the causes and impacts of this trend."
-      ],
-      Art: [
-        "Some people argue that government funding for the arts, such as music and theatre, is a waste of money in modern society. To what extent do you agree or disagree?",
-        "Art and music classes are being reduced in many school curricula to make more room for science and mathematics. Is this a positive or negative development?"
-      ],
-      Technology: [
-        "Some people believe that advanced technological developments, such as artificial intelligence and automation, produce severe ethical dilemmas in modern society. To what extent do you agree or disagree?",
-        "The increasing use of smartphones and social media has altered human interaction significantly. Do the benefits of this technology outweigh the drawbacks?"
-      ],
-      Sport: [
-        "Successful sports professionals can earn a great deal more money than people in other important professions. Some people think this is fully justified, while others think it is unfair. Discuss both views and give your opinion.",
-        "Hosting international sporting events brings major economic and social benefits to a country. To what extent do you agree or disagree?"
-      ],
-      'Social Issues': [
-        "In many countries, an increasing number of young people are choosing to live alone rather than with their families or roommates. What are the reasons for this, and is it a positive or negative trend?",
-        "The gap between the wealthy and the poor is widening globally. What problems does this disparity cause, and what measures can be taken to reduce it?"
-      ],
-      Environment: [
-        "Environmental pollution is a global problem, and it can only be solved through international cooperation rather than individual action. To what extent do you agree or disagree?",
-        "The consumption of single-use plastic has caused severe damage to marine ecosystems. What are the primary causes, and how can governments encourage sustainable alternatives?"
-      ]
-    };
+    let promptText = `With the rapid advancement of technology in modern society, some people believe it brings positive opportunities while others argue it creates ethical dilemmas. To what extent do you agree or disagree? (Unique Seed #${timestamp})`;
 
-    const topicPrompts = fallbackPrompts[randomTopic] || fallbackPrompts['Technology'];
-    let promptText = topicPrompts[Math.floor(Math.random() * topicPrompts.length)];
+    try {
+      const aiRes = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert Cambridge IELTS examiner. You MUST generate a completely original, highly creative, unique IELTS Writing Task 2 essay prompt in English on the given topic.'
+          },
+          {
+            role: 'user',
+            content: `Create a brand new, never-seen-before IELTS Writing Task 2 essay question regarding the topic: "${randomTopic}". Unique Request ID: ${timestamp}-${uniqueExamId}. Output ONLY the prompt text in English without quotes or extra explanation.`
+          }
+        ],
+        temperature: 0.98
+      });
 
-    let fullSuggestedVocab = [
-      { word: 'profound implications', meaning: 'Hệ quả/tác động sâu sắc', collocation: 'have profound implications for society' },
-      { word: 'imperative duty', meaning: 'Nhiệm vụ bắt buộc', collocation: 'regard as an imperative duty' },
-      { word: 'substantially alleviate', meaning: 'Giảm thiểu đáng kể', collocation: 'substantially alleviate the burden' },
-      { word: 'indispensable asset', meaning: 'Tài sản không thể thiếu', collocation: 'an indispensable asset to growth' },
-      { word: 'foster innovation', meaning: 'Thúc đẩy sự đổi mới', collocation: 'foster innovation and progress' },
-      { word: 'deterrent factor', meaning: 'Yếu tố răn đe', collocation: 'act as a strong deterrent factor' },
-      { word: 'ethical dilemma', meaning: 'Tiến thoái lưỡng nan về đạo đức', collocation: 'pose a severe ethical dilemma' },
-      { word: 'unprecedented growth', meaning: 'Sự tăng trưởng chưa từng có', collocation: 'witness unprecedented growth' },
-      { word: 'intellectual resilience', meaning: 'Sự kiên cường trí tuệ', collocation: 'cultivate intellectual resilience' },
-      { word: 'holistic development', meaning: 'Sự phát triển toàn diện', collocation: 'promote holistic development' }
-    ];
-
-    let fullExercises = [
-      { prompt: 'Câu 1: Điền cụm từ vựng học thuật chỉ tác động sâu sắc:', blankSpaceText: 'The technological revolution has had _______ for modern society.', correctAnswer: 'profound implications', explanation: '"profound implications" nghĩa là các tác động/hệ quả sâu sắc.' },
-      { prompt: 'Câu 2: Điền từ chỉ trách nhiệm bắt buộc:', blankSpaceText: 'Protecting global ecosystems is considered an _______ for all governments.', correctAnswer: 'imperative duty', explanation: '"imperative duty" chỉ nghĩa là trách nhiệm/nghĩa vụ bắt buộc.' },
-      { prompt: 'Câu 3: Điền từ chỉ việc giảm nhẹ gánh nặng:', blankSpaceText: 'Renewable energy investment will _______ the dependence on fossil fuels.', correctAnswer: 'substantially alleviate', explanation: '"substantially alleviate" nghĩa là làm giảm nhẹ đáng kể.' },
-      { prompt: 'Câu 4: Điền từ chỉ tài sản vô giá/không thể thiếu:', blankSpaceText: 'Critical thinking skills are an _______ in the modern workplace.', correctAnswer: 'indispensable asset', explanation: '"indispensable asset" là tài sản/kỹ năng không thể thiếu.' },
-      { prompt: 'Câu 5: Điền từ chỉ sự thúc đẩy đổi mới:', blankSpaceText: 'Educational reforms should _______ and creative thinking.', correctAnswer: 'foster innovation', explanation: '"foster innovation" nghĩa là nuôi dưỡng/thúc đẩy đổi mới.' },
-      { prompt: 'Câu 6: Điền từ chỉ yếu tố răn đe:', blankSpaceText: 'Strict laws act as a strong _______ against illegal activities.', correctAnswer: 'deterrent factor', explanation: '"deterrent factor" nghĩa là yếu tố răn đe ngăn chặn.' },
-      { prompt: 'Câu 7: Điền từ chỉ cuộc xung đột đạo đức:', blankSpaceText: 'Genetic engineering often poses a complex _______.', correctAnswer: 'ethical dilemma', explanation: '"ethical dilemma" chỉ tình huống tiến thoái lưỡng nan về đạo đức.' },
-      { prompt: 'Câu 8: Điền từ chỉ sự phát triển chưa từng có:', blankSpaceText: 'The digital economy has experienced _______ over the past decade.', correctAnswer: 'unprecedented growth', explanation: '"unprecedented growth" là tăng trưởng vượt bậc chưa từng thấy.' },
-      { prompt: 'Câu 9: Điền từ chỉ sự kiên cường về mặt trí tuệ:', blankSpaceText: 'Challenging curricula help students build _______.', correctAnswer: 'intellectual resilience', explanation: '"intellectual resilience" là bản lĩnh/sự kiên cường trí tuệ.' },
-      { prompt: 'Câu 10: Điền từ chỉ sự phát triển toàn diện:', blankSpaceText: 'Schools should aim for the _______ of young individuals.', correctAnswer: 'holistic development', explanation: '"holistic development" là sự phát triển toàn diện cả thể chất lẫn trí tuệ.' }
-    ];
-
-    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'dummy-key-for-fallback') {
-      try {
-        const aiRes = await openai.chat.completions.create({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert Cambridge IELTS examiner. Generate a unique, challenging IELTS Writing Task 2 essay prompt in English.'
-            },
-            {
-              role: 'user',
-              content: `Write a brand new, unique IELTS Writing Task 2 essay question about ${randomTopic}. Unique seed ID #${timestamp}. Return ONLY the English essay prompt text without quotes.`
-            }
-          ],
-          temperature: 0.95
-        });
-
-        if (aiRes && aiRes.choices && aiRes.choices[0] && aiRes.choices[0].message) {
-          promptText = aiRes.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
-        }
-      } catch (e) {
-        console.error('Error generating AI prompt in generate-ai-exam, using fallback:', e.message);
+      if (aiRes && aiRes.choices && aiRes.choices[0] && aiRes.choices[0].message && aiRes.choices[0].message.content) {
+        promptText = aiRes.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
       }
+    } catch (e) {
+      console.error('Error generating AI prompt from OpenAI in generate-ai-exam:', e.message);
+      promptText = `Discuss the advantages and disadvantages of recent developments in ${randomTopic} and how they affect modern society. (ID: #${timestamp})`;
     }
+
 
 
 
