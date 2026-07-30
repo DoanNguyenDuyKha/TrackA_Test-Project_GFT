@@ -162,13 +162,19 @@ const AdminAssignments = () => {
 - ${outlineConclusion.split('\n').join('\n- ')}
       `.trim();
 
+      const selectedSampleAnswer = targetGroup === 'support'
+        ? sampleSupport
+        : targetGroup === 'average'
+        ? sampleAverage
+        : sampleExcellent;
+
       const payload = {
         title: formattedTitle,
         prompt,
         topic,
         targetGroup,
         scaffoldingTemplate: combinedScaffolding,
-        sampleAnswer: sampleExcellent,
+        sampleAnswer: selectedSampleAnswer,
         groupSampleAnswers: {
           support: sampleSupport,
           average: sampleAverage,
@@ -480,54 +486,66 @@ const AdminAssignments = () => {
                   </div>
                 )}
 
-                {/* TAB 2: Sample Answers for 3 Groups */}
+                {/* TAB 2: Sample Answer for selected Target Group */}
                 {activeTab === 'samples' && (
                   <div className="flex-1 flex flex-col space-y-4 animate-fadeIn">
                     <div className="p-5 bg-blue-50/60 rounded-3xl border border-blue-100 flex-1 flex flex-col justify-between space-y-4">
                       <div className="flex items-center space-x-2 text-blue-900 font-extrabold text-sm border-b border-blue-100 pb-3">
                         <Sparkles className="w-5 h-5 text-blue-600" />
-                        <span>Bài Luận Mẫu Thích Ứng Cho 3 Nhóm Học Viên (Dữ Liệu Chuẩn AI)</span>
+                        <span>
+                          Bài Luận Mẫu Dành Cho Nhóm Học Viên Đích (
+                          <span className="uppercase text-blue-700 font-black">
+                            {targetGroup === 'support' ? 'Cần Hỗ Trợ - Band 6.0' : targetGroup === 'average' ? 'Trung Bình - Band 7.0' : 'Xuất Sắc - Band 8.5+'}
+                          </span>
+                          )
+                        </span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
-                        <div className="flex flex-col">
-                          <label className="block text-red-700 font-bold mb-2 text-xs">
-                            • Bài mẫu Band 6.0 (Nhóm Cần Hỗ Trợ - Support)
-                          </label>
-                          <textarea
-                            rows={10}
-                            value={sampleSupport}
-                            onChange={(e) => setSampleSupport(e.target.value)}
-                            placeholder="Nhập bài essay mẫu ở mức Band 6.0 (từ vựng đơn giản, cấu trúc rõ ràng)..."
-                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs leading-relaxed"
-                          ></textarea>
-                        </div>
+                      <div className="flex flex-col flex-1">
+                        {targetGroup === 'support' && (
+                          <div className="flex flex-col flex-1">
+                            <label className="block text-red-700 font-bold mb-2 text-sm">
+                              • Bài mẫu Band 6.0 (Dành riêng cho Nhóm Cần Hỗ Trợ - Support)
+                            </label>
+                            <textarea
+                              rows={12}
+                              value={sampleSupport}
+                              onChange={(e) => setSampleSupport(e.target.value)}
+                              placeholder="Nhập bài essay mẫu ở mức Band 6.0 (từ vựng đơn giản, cấu trúc rõ ràng)..."
+                              className="w-full flex-1 p-4 bg-white border border-slate-200 rounded-2xl font-normal text-sm leading-relaxed focus:ring-2 focus:ring-red-400"
+                            ></textarea>
+                          </div>
+                        )}
 
-                        <div className="flex flex-col">
-                          <label className="block text-amber-700 font-bold mb-2 text-xs">
-                            • Bài mẫu Band 7.0 (Nhóm Trung Bình - Average)
-                          </label>
-                          <textarea
-                            rows={10}
-                            value={sampleAverage}
-                            onChange={(e) => setSampleAverage(e.target.value)}
-                            placeholder="Nhập bài essay mẫu ở mức Band 7.0 (từ vựng tốt, collocations)..."
-                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs leading-relaxed"
-                          ></textarea>
-                        </div>
+                        {targetGroup === 'average' && (
+                          <div className="flex flex-col flex-1">
+                            <label className="block text-amber-700 font-bold mb-2 text-sm">
+                              • Bài mẫu Band 7.0 (Dành riêng cho Nhóm Trung Bình - Average)
+                            </label>
+                            <textarea
+                              rows={12}
+                              value={sampleAverage}
+                              onChange={(e) => setSampleAverage(e.target.value)}
+                              placeholder="Nhập bài essay mẫu ở mức Band 7.0 (từ vựng tốt, collocations)..."
+                              className="w-full flex-1 p-4 bg-white border border-slate-200 rounded-2xl font-normal text-sm leading-relaxed focus:ring-2 focus:ring-amber-400"
+                            ></textarea>
+                          </div>
+                        )}
 
-                        <div className="flex flex-col">
-                          <label className="block text-emerald-700 font-bold mb-2 text-xs">
-                            • Bài mẫu Band 8.5+ (Nhóm Xuất Sắc - Excellent)
-                          </label>
-                          <textarea
-                            rows={10}
-                            value={sampleExcellent}
-                            onChange={(e) => setSampleExcellent(e.target.value)}
-                            placeholder="Nhập bài essay mẫu xuất sắc ở mức Band 8.5+..."
-                            className="w-full flex-1 p-3.5 bg-white border border-slate-200 rounded-2xl font-normal text-xs leading-relaxed"
-                          ></textarea>
-                        </div>
+                        {targetGroup === 'excellent' && (
+                          <div className="flex flex-col flex-1">
+                            <label className="block text-emerald-700 font-bold mb-2 text-sm">
+                              • Bài mẫu Band 8.5+ (Dành riêng cho Nhóm Xuất Sắc - Excellent)
+                            </label>
+                            <textarea
+                              rows={12}
+                              value={sampleExcellent}
+                              onChange={(e) => setSampleExcellent(e.target.value)}
+                              placeholder="Nhập bài essay mẫu xuất sắc ở mức Band 8.5+..."
+                              className="w-full flex-1 p-4 bg-white border border-slate-200 rounded-2xl font-normal text-sm leading-relaxed focus:ring-2 focus:ring-emerald-400"
+                            ></textarea>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
