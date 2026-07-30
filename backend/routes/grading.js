@@ -227,37 +227,27 @@ router.post('/generate-promotion-prompt', authenticateToken, async (req, res) =>
       try {
         const aiRes = await openai.chat.completions.create({
           model: 'gpt-4o',
-          response_format: { type: 'json_object' },
           messages: [
             {
               role: 'system',
-              content: `Bạn là Chuyên gia ra đề IELTS Writing Task 2 Cambridge. Sáng tạo 1 đề thi độc bản hoàn toàn mới về chủ đề ${randomTopic} dạng JSON:
-{
-  "prompt": "Câu hỏi essay IELTS Task 2 bằng tiếng Anh độc bản hoàn toàn mới",
-  "suggestedVocabulary": [
-    { "word": "từ vựng C1/C2", "meaning": "nghĩa tiếng Việt", "collocation": "cụm từ đi kèm" }
-  ],
-  "exercises": [
-    { "prompt": "Mô tả câu hỏi", "blankSpaceText": "Câu có chỗ trống _______", "correctAnswer": "từ cần điền", "explanation": "giải thích chi tiết" }
-  ]
-}`
+              content: 'You are an expert Cambridge IELTS examiner. Generate a unique, challenging IELTS Writing Task 2 essay prompt in English.'
             },
             {
               role: 'user',
-              content: `Sáng tạo đề thi IELTS Task 2 độc bản mới về chủ đề ${randomTopic} (Mã sinh ngẫu nhiên #${timestamp}).`
+              content: `Write a brand new, unique IELTS Writing Task 2 essay question about ${randomTopic}. Unique seed ID #${timestamp}. Return ONLY the English essay prompt text without quotes.`
             }
           ],
           temperature: 0.95
         });
 
-        const parsedAI = JSON.parse(aiRes.choices[0].message.content);
-        if (parsedAI.prompt) promptText = parsedAI.prompt;
-        if (parsedAI.suggestedVocabulary && Array.isArray(parsedAI.suggestedVocabulary)) fullSuggestedVocab = parsedAI.suggestedVocabulary;
-        if (parsedAI.exercises && Array.isArray(parsedAI.exercises)) fullExercises = parsedAI.exercises;
+        if (aiRes && aiRes.choices && aiRes.choices[0] && aiRes.choices[0].message) {
+          promptText = aiRes.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+        }
       } catch (e) {
         console.error('Error generating AI prompt, using fallback:', e.message);
       }
     }
+
 
 
 
@@ -369,37 +359,27 @@ router.post('/generate-ai-exam', authenticateToken, async (req, res) => {
       try {
         const aiRes = await openai.chat.completions.create({
           model: 'gpt-4o',
-          response_format: { type: 'json_object' },
           messages: [
             {
               role: 'system',
-              content: `Bạn là Chuyên gia ra đề IELTS Writing Task 2 Cambridge. Sáng tạo 1 đề thi độc bản hoàn toàn mới về chủ đề ${randomTopic} dạng JSON:
-{
-  "prompt": "Câu hỏi essay IELTS Task 2 bằng tiếng Anh độc bản hoàn toàn mới",
-  "suggestedVocabulary": [
-    { "word": "từ vựng C1/C2", "meaning": "nghĩa tiếng Việt", "collocation": "cụm từ đi kèm" }
-  ],
-  "exercises": [
-    { "prompt": "Mô tả câu hỏi", "blankSpaceText": "Câu có chỗ trống _______", "correctAnswer": "từ cần điền", "explanation": "giải thích chi tiết" }
-  ]
-}`
+              content: 'You are an expert Cambridge IELTS examiner. Generate a unique, challenging IELTS Writing Task 2 essay prompt in English.'
             },
             {
               role: 'user',
-              content: `Sáng tạo đề thi IELTS Task 2 độc bản mới về chủ đề ${randomTopic} (Mã sinh ngẫu nhiên #${timestamp}).`
+              content: `Write a brand new, unique IELTS Writing Task 2 essay question about ${randomTopic}. Unique seed ID #${timestamp}. Return ONLY the English essay prompt text without quotes.`
             }
           ],
           temperature: 0.95
         });
 
-        const parsedAI = JSON.parse(aiRes.choices[0].message.content);
-        if (parsedAI.prompt) promptText = parsedAI.prompt;
-        if (parsedAI.suggestedVocabulary && Array.isArray(parsedAI.suggestedVocabulary)) fullSuggestedVocab = parsedAI.suggestedVocabulary;
-        if (parsedAI.exercises && Array.isArray(parsedAI.exercises)) fullExercises = parsedAI.exercises;
+        if (aiRes && aiRes.choices && aiRes.choices[0] && aiRes.choices[0].message) {
+          promptText = aiRes.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+        }
       } catch (e) {
         console.error('Error generating AI prompt in generate-ai-exam, using fallback:', e.message);
       }
     }
+
 
 
 
