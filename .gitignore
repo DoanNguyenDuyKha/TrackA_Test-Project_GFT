@@ -4,7 +4,12 @@ dist
 .DS_Store
 *.log
 
+# MS Word temporary lock files
+~$*.docx
+*.docx
+
 # Tài liệu nội bộ — không nộp cho công ty
 KICH_BAN_VIDEO.md
 KICH_BAN_QUAY_VIDEO_THUYET_TRINH.docx
+
 
